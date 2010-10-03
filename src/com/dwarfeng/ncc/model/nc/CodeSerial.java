@@ -12,7 +12,7 @@ public interface CodeSerial extends Iterable<Code>{
 	
 	/**
 	 * 返回指定行号的代码。
-	 * @param lineIndex 指定的行号。
+	 * @param lineNumber 指定的行号。
 	 * @return 指定行号对应的代码。
 	 * @throws NoSuchElementException 指定的代码序列中没有指定的元素。
 	 */

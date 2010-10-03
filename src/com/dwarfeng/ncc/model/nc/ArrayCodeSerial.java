@@ -18,7 +18,7 @@ public final class ArrayCodeSerial implements CodeSerial {
 	 * 构造一个由指定数组组成的代码列表。
 	 * @param codeArray 指定的数组。
 	 * @throws NullPointerException 入口参数为 <code>null</code>。
-	 * @throws 代码不呈颗粒性递增。
+	 * @throws IllegalArgumentException 代码不呈颗粒性递增。
 	 */
 	public ArrayCodeSerial(Code[] codeArray) {
 		Objects.requireNonNull(codeArray);

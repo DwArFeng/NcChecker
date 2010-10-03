@@ -15,6 +15,7 @@ public final class StringCode implements Code{
 	/**
 	 * 生成一个字符串代码对象。
 	 * @param code 指定的文本代码。
+	 * @param codeLabel 指定的代码标签。
 	 * @throws NullPointerException 入口参数为 <code>null</code>时抛出异常。
 	 */
 	public StringCode(String code, CodeLabel codeLabel) {

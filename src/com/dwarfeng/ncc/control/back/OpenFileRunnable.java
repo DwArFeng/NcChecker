@@ -41,6 +41,7 @@ public final class OpenFileRunnable extends AbstractCmr implements Runnable {
 	 * 生成一个指定的打开文件可运行对象。
 	 * @param controlManager 指定的程序管理器。
 	 * @param codeLoader NC代码读取器。
+	 * @param file 指定的文件。
 	 * @throws NullPointerException 入口参数为 <code>null</code>。
 	 */
 	public OpenFileRunnable(NccControlManager controlManager, CodeLoader codeLoader, File file) {

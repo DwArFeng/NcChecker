@@ -26,7 +26,7 @@ public interface FrameCp {
 	/**
 	 * 设置显示模式是否为无文件模式。
 	 * <p> 在无文件模式下，诸如保存、另存为等功能将被禁用。
-	 * @param aFlag
+	 * @param aFlag 是否为无文件模式。
 	 */
 	public void noneFileMode(boolean aFlag);
 	
