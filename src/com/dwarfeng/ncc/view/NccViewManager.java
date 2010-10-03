@@ -21,6 +21,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.swing.ButtonGroup;
+import javax.swing.ButtonModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -34,6 +36,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
@@ -49,8 +52,9 @@ import com.dwarfeng.dfunc.io.CT;
 import com.dwarfeng.dfunc.prog.mvc.AbstractViewManager;
 import com.dwarfeng.dfunc.threads.InnerThread;
 import com.dwarfeng.ncc.control.NccControlPort;
-import com.dwarfeng.ncc.module.nc.Code;
-import com.dwarfeng.ncc.module.nc.CodeSerial;
+import com.dwarfeng.ncc.control.NccControlPort.Mode;
+import com.dwarfeng.ncc.model.nc.Code;
+import com.dwarfeng.ncc.model.nc.CodeSerial;
 import com.dwarfeng.ncc.program.NccProgramAttrSet;
 import com.dwarfeng.ncc.program.conf.MfAppearConfig;
 import com.dwarfeng.ncc.program.key.ImageKey;
@@ -301,6 +305,46 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				Objects.requireNonNull(model);
 				progressPanel.setProgressModel(model);
 			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.gui.FrameCp#toggleMode(com.dwarfeng.ncc.control.NccControlPort.CodePanelMode)
+			 */
+			@Override
+			public void toggleMode(Mode mode) {
+				switch(mode){
+					case EDIT:
+						codePanel.remove(codeCenter1);
+						codePanel.add(codeCenter2, BorderLayout.CENTER);
+						codePanel.repaint();
+						editFlag = false;
+						break;
+					case INSPECT:
+						codePanel.remove(codeCenter2);
+						codePanel.add(codeCenter1, BorderLayout.CENTER);
+						codePanel.repaint();
+						break;
+				}
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.gui.FrameCp#setEditText(java.lang.String)
+			 */
+			@Override
+			public void setEditText(String text) {
+				codeCenter2.setText(text == null ? "" : text);
+				editFlag = false;
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.gui.FrameCp#getEditFlag()
+			 */
+			@Override
+			public boolean getEditFlag() {
+				return editFlag;
+			}
 		};
 		
 		
@@ -319,11 +363,13 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 		private final CodeCenter2 codeCenter2;
 		private final CodeToolBar codeToolBar;
 		private final JPanel codePanel;
+		private boolean editFlag;
 		
 		public NccFrame(){
 			this.codeCenter1 = new CodeCenter1();
 			this.codeCenter2 = new CodeCenter2();
 			this.codeToolBar = new CodeToolBar();
+			this.editFlag = false;
 			
 			setSize(new Dimension(800, 600));
 			addWindowListener(new WindowAdapter() {
@@ -428,8 +474,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 						.listener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								// TODO Auto-generated method stub
-								
+								controlPort.newFrontFile();
 							}
 						})
 						.build()
@@ -613,6 +658,8 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 	
 		private class CodeCenter2 extends JPanel implements MutiStatus{
 			
+			private final JTextArea textArea;
+			
 			private boolean noneFileMask;
 			private boolean lockEditMask;
 			
@@ -622,10 +669,20 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				JScrollPane scrollPane = new JScrollPane();
 				add(scrollPane,BorderLayout.CENTER);
 				
-				JTextArea textArea = new JTextArea();
+				textArea = new JTextArea();
 				textArea.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
 				
 				scrollPane.setViewportView(textArea);
+				
+				JPanel southPanel = new JPanel();
+				GridBagLayout southLayout = new GridBagLayout();
+				southLayout.columnWidths = new int[]{0,0,0,0,0};
+				southLayout.rowHeights = new int[]{0};
+				southLayout.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, 0.0};
+				southLayout.rowWeights = new double[]{0.0};
+				southPanel.setLayout(southLayout);
+				getContentPane().add(southPanel, BorderLayout.SOUTH);
+				
 			}
 
 			/* (non-Javadoc)
@@ -656,40 +713,60 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				refresh();
 			}
 			
+			public void setText(String text){
+				textArea.setText(text);
+				revalidate();
+			}
+			
 			private void refresh() {
-				// TODO Auto-generated method stub
-				
+				textArea.setEditable(!(lockEditMask || noneFileMask));
 			}
 			
 		}
 		
 		private class CodeToolBar extends JToolBar implements MutiStatus{
 			
-			private final JButton codeFunction;
-			private final JButton codeEdit;
-			
-			private boolean codeFunctionFlag;
-			private boolean codeEditFlag;
+			private final JToggleButton codeFunction;
+			private final JToggleButton codeEdit;
+			private final ButtonGroup buttonGroup;
 			
 			private boolean lockEditMask = false;
 			private boolean noneFileMask = false;
 			
+			private ButtonModel currentButtonModel;
+			
 			public CodeToolBar() {
-				this.codeFunctionFlag = false;
-				this.codeEditFlag = true;
-				
 				setFloatable(false);
 				setBorder(new BevelBorder(BevelBorder.LOWERED));
 				setOrientation(JToolBar.VERTICAL);
 				
-				codeFunction = new JButton();
+				final ActionListener actionListener = new ActionListener() {
+					
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						checkButtonGroup();
+					}
+				};
+				
+				buttonGroup = new ButtonGroup();
+				
+				codeFunction = new JToggleButton();
 				codeFunction.setIcon(new ImageIcon(programAttrSet.getImage(IMG_CINSPECT)));
-				codeFunction.setBorder(new EmptyBorder(new Insets(5, 0, 5, 0)));
+				codeFunction.setPreferredSize(new Dimension(25,25));
+				codeFunction.addActionListener(actionListener);
 				add(codeFunction);
 				
-				codeEdit = new JButton();
+				codeEdit = new JToggleButton();
 				codeEdit.setIcon(new ImageIcon(programAttrSet.getImage(IMG_CEDIT)));
+				codeEdit.setSelected(false);
+				codeEdit.setPreferredSize(new Dimension(25,25));
+				codeEdit.addActionListener(actionListener);
 				add(codeEdit);
+				
+				buttonGroup.add(codeFunction);
+				buttonGroup.add(codeEdit);
+				buttonGroup.setSelected(codeFunction.getModel(), true);
+				currentButtonModel = codeFunction.getModel();
 			}
 			
 			/* (non-Javadoc)
@@ -720,8 +797,15 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			}
 			
 			private void refresh(){
-				codeEdit.setEnabled(lockEditMask || noneFileMask ? false : codeEditFlag);
-				codeFunction.setEnabled(lockEditMask || noneFileMask ? false : codeFunctionFlag);
+				codeEdit.setEnabled(!(lockEditMask || noneFileMask));
+				codeFunction.setEnabled(!(lockEditMask || noneFileMask));
+			}
+			
+			private void checkButtonGroup(){
+				if(buttonGroup.getSelection() == currentButtonModel) return;
+				currentButtonModel = buttonGroup.getSelection();
+				if(codeEdit.isSelected()) controlPort.toggleMode(Mode.EDIT);
+				if(codeFunction.isSelected()) controlPort.toggleMode(Mode.INSPECT);
 			}
 			
 		}

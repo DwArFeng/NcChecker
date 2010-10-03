@@ -6,8 +6,8 @@ import java.io.IOException;
 import com.dwarfeng.dfunc.prog.MvcProgram;
 import com.dwarfeng.ncc.control.NccControlManager;
 import com.dwarfeng.ncc.control.NccControlPort;
-import com.dwarfeng.ncc.module.NccModuleControlPort;
-import com.dwarfeng.ncc.module.NccModuleManager;
+import com.dwarfeng.ncc.model.NccModelControlPort;
+import com.dwarfeng.ncc.model.NccModelManager;
 import com.dwarfeng.ncc.view.NccViewControlPort;
 import com.dwarfeng.ncc.view.NccViewManager;
 
@@ -18,7 +18,7 @@ import com.dwarfeng.ncc.view.NccViewManager;
  * @author DwArFeng
  * @since 1.8
  */
-public final class NccProgram extends MvcProgram<NccProgramControlPort, NccModuleControlPort, 
+public final class NccProgram extends MvcProgram<NccProgramControlPort, NccModelControlPort, 
 NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException {
@@ -30,7 +30,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 	 * 生成数控代码验证程序。
 	 */
 	public NccProgram() {
-		super(new NccModuleManager(), new NccViewManager(), new NccControlManager(), new NccProgramManager());
+		super(new NccModelManager(), new NccViewManager(), new NccControlManager(), new NccProgramManager());
 	}
 
 }

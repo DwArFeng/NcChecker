@@ -1,6 +1,7 @@
 package com.dwarfeng.ncc.view.gui;
 
-import com.dwarfeng.ncc.module.nc.CodeSerial;
+import com.dwarfeng.ncc.control.NccControlPort.Mode;
+import com.dwarfeng.ncc.model.nc.CodeSerial;
 import com.dwarfeng.ncc.program.conf.MfAppearConfig;
 
 /**
@@ -75,5 +76,24 @@ public interface FrameCp {
 	 * @throws NullPointerException 进度模型为 <code>null</code>。
 	 */
 	public void startProgressMonitor(ProgressModel model);
+	
+	/**
+	 * 切换代码面板的模式。
+	 * @param mode 指定的模式。
+	 * @throws NullPointerException 入口参数为 <code>null</code>。
+	 */
+	public void toggleMode(Mode mode);
+	
+	/**
+	 * 设置编辑面板的文本。
+	 * @param text 指定的文本。
+	 */
+	public void setEditText(String text);
+	
+	/**
+	 * 获取编辑模式是否需要提交的标记。
+	 * @return 是否需要提交。
+	 */
+	public boolean getEditFlag();
 	
 }

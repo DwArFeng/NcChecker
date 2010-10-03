@@ -62,7 +62,7 @@ public final class DefaultProgressModel implements ProgressModel {
 	public int getValue() {
 		lock.readLock().lock();
 		try{
-			return Math.min(value, Math.max(maximum, 1) - 1);
+			return Math.min(value, Math.max(maximum, 1));
 		}finally{
 			lock.readLock().unlock();
 		}

@@ -3,7 +3,7 @@ package com.dwarfeng.ncc.control.back;
 import java.util.Objects;
 
 import com.dwarfeng.ncc.control.NccControlManager;
-import com.dwarfeng.ncc.module.NccModuleControlPort;
+import com.dwarfeng.ncc.model.NccModelControlPort;
 import com.dwarfeng.ncc.program.NccProgramAttrSet;
 import com.dwarfeng.ncc.program.NccProgramControlPort;
 import com.dwarfeng.ncc.view.NccViewControlPort;
@@ -17,7 +17,7 @@ abstract class AbstractCmr implements Runnable{
 	
 	protected final NccControlManager cm;
 	protected final NccViewControlPort viewControlPort;
-	protected final NccModuleControlPort moduleControlPort;
+	protected final NccModelControlPort moduleControlPort;
 	protected final NccProgramControlPort programControlPort;
 	protected final NccProgramAttrSet programAttrSet;
 

@@ -16,9 +16,11 @@ import com.dwarfeng.dfunc.DwarfFunction;
 import com.dwarfeng.dfunc.io.CT;
 import com.dwarfeng.dfunc.io.CT.OutputType;
 import com.dwarfeng.dfunc.prog.mvc.AbstractControlManager;
+import com.dwarfeng.ncc.control.back.NewFileRunnable;
 import com.dwarfeng.ncc.control.back.OpenFileRunnable;
-import com.dwarfeng.ncc.module.NccModuleControlPort;
-import com.dwarfeng.ncc.module.front.CodeLoader;
+import com.dwarfeng.ncc.control.back.Toggle2EidtRunnable;
+import com.dwarfeng.ncc.model.NccModelControlPort;
+import com.dwarfeng.ncc.model.front.CodeLoader;
 import com.dwarfeng.ncc.program.NccProgramAttrSet;
 import com.dwarfeng.ncc.program.NccProgramControlPort;
 import com.dwarfeng.ncc.program.conf.FrontConfig;
@@ -32,7 +34,7 @@ import com.dwarfeng.ncc.view.gui.StatusLabelType;
  * @author DwArFeng
  * @since 1.8
  */
-public final class NccControlManager extends AbstractControlManager<NccProgramControlPort, NccModuleControlPort,
+public final class NccControlManager extends AbstractControlManager<NccProgramControlPort, NccModelControlPort,
 NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 	
 	//-----------------------------以下是需要使用的各种字段键值------------------------------------
@@ -48,6 +50,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 	private final NccControlPort controlPort = new NccControlPort() {
 		
 		private boolean startFlag = false;
+		private Mode currentMode;
 		
 		/*
 		 * (non-Javadoc)
@@ -57,11 +60,12 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 		public void startProgram() {
 			if(startFlag) throw new IllegalStateException(KEY_INITED);
 			startFlag = true;
+			currentMode = Mode.INSPECT;
 			
-			//由于界面支持该外观，所以不可能抛出异常。
-			try {
-				UIManager.setLookAndFeel(new NimbusLookAndFeel());
-			} catch (UnsupportedLookAndFeelException e) {}
+//			//由于界面支持该外观，所以不可能抛出异常。
+//			try {
+//				UIManager.setLookAndFeel(new NimbusLookAndFeel());
+//			} catch (UnsupportedLookAndFeelException e) {}
 			
 			//各控制站点初始化
 			programControlPort.init();
@@ -165,6 +169,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 				return;
 			}
 			
+			//后台中运行指定方法
 			programControlPort.backInvoke(new OpenFileRunnable(NccControlManager.this, codeLoader, file));
 		}
 
@@ -240,6 +245,43 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 			//可能需要涉及关闭文件
 			perhapsCloseFrontFile();
 			
+			//后台中运行指定方法
+			programControlPort.backInvoke(new NewFileRunnable(NccControlManager.this));
+			
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.control.NccControlPort#toggleMode(com.dwarfeng.ncc.control.NccControlPort.CodePanelMode)
+		 */
+		@Override
+		public void toggleMode(Mode mode) {
+			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
+			Objects.requireNonNull(mode);
+			
+			switch(mode){
+				case EDIT:
+					toggle2Edit();
+					break;
+				case INSPECT:
+					toggle2Inspect();
+					break;
+			}
+		}
+
+
+		private void toggle2Inspect() {
+			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
+			// TODO Auto-generated method stub
+			//FOO
+			
+			viewControlPort.frameCp().toggleMode(Mode.INSPECT);
+		}
+
+		private void toggle2Edit() {
+			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
+			
+			programControlPort.backInvoke(new Toggle2EidtRunnable(NccControlManager.this));
 		}
 		
 		

@@ -10,7 +10,7 @@ import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.EmptyBorder;
 
-import com.dwarfeng.ncc.module.nc.Code;
+import com.dwarfeng.ncc.model.nc.Code;
 
 /**
  * 代码标签的渲染类。

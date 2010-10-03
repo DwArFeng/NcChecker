@@ -19,6 +19,8 @@ public enum StringFieldKey {
 	PROGRESS_NOMISSION,
 	/**正在读取文件*/
 	PROGRESS_FILE_NOWLOADING,
+	/**正在进入编辑模式*/
+	PROGRESS_CODE_EDIT,
 	
 	/**就绪*/
 	LABEL_GETREADY,
@@ -63,5 +65,13 @@ public enum StringFieldKey {
 	OUT_NEWFILE_START,
 	/**新建文件统计*/
 	OUT_NEWFILE_STATS,
+	/**开始进入编辑模式*/
+	OUT_EDIT_START,
+	/**进入编辑模式统计*/
+	OUT_EDIT_STATS,
+	/**进入编辑模式失败*/
+	OUT_EDIT_FAIL,
+	/**进入编辑模式中止*/
+	OUT_EDIT_SUSPEND,
 	
 }

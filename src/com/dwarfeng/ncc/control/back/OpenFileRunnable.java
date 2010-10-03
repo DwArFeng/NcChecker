@@ -9,10 +9,10 @@ import java.util.Objects;
 import com.dwarfeng.dfunc.dt.CodeTimer;
 import com.dwarfeng.dfunc.num.UnitTrans.Time;
 import com.dwarfeng.ncc.control.NccControlManager;
-import com.dwarfeng.ncc.module.front.CodeLoader;
-import com.dwarfeng.ncc.module.nc.ArrayCodeSerial;
-import com.dwarfeng.ncc.module.nc.Code;
-import com.dwarfeng.ncc.module.nc.CodeSerial;
+import com.dwarfeng.ncc.model.front.CodeLoader;
+import com.dwarfeng.ncc.model.nc.ArrayCodeSerial;
+import com.dwarfeng.ncc.model.nc.Code;
+import com.dwarfeng.ncc.model.nc.CodeSerial;
 import com.dwarfeng.ncc.program.key.StringFieldKey;
 import com.dwarfeng.ncc.view.gui.DefaultProgressModel;
 import com.dwarfeng.ncc.view.gui.ProgressModel;
@@ -30,6 +30,7 @@ public final class OpenFileRunnable extends AbstractCmr implements Runnable {
 	private static final StringFieldKey KEY_START = StringFieldKey.OUT_LOADFILE_START;
 	private static final StringFieldKey KEY_STATS= StringFieldKey.OUT_LOADFILE_STATS;
 	private static final StringFieldKey KEY_SUSPEND= StringFieldKey.OUT_LOADFILE_SUSPEND;
+	private static final StringFieldKey KEY_FAIL= StringFieldKey.OUT_LOADFILE_FAIL;
 	
 	//------------------------------------------------------------------------------------------------
 	
@@ -55,9 +56,11 @@ public final class OpenFileRunnable extends AbstractCmr implements Runnable {
 	 */
 	@Override
 	public void run() {
+		
+		//界面编辑锁定。
+		viewControlPort.frameCp().lockEdit();
+		
 		try{
-			//界面编辑锁定。
-			viewControlPort.frameCp().lockEdit();
 			//输出基本信息
 			viewControlPort.frameCp().traceInConsole(
 					programAttrSet.getStringField(KEY_START),
@@ -77,24 +80,26 @@ public final class OpenFileRunnable extends AbstractCmr implements Runnable {
 			//建立代码计时机制
 			CodeTimer cti = new CodeTimer();
 			cti.start();
+			
 			//循环读取程序
-			for(int i = 1 ; codeLoader.hasNext() ; i++){
+			for(;codeLoader.hasNext();){
 				
 				//如果手动停止，则终止进程。
 				if(progressModel.isSuspend()){
-					viewControlPort.frameCp().traceInConsole(programAttrSet.getStringField(KEY_SUSPEND),"");
+					viewControlPort.frameCp().traceInConsole(programAttrSet.getStringField(KEY_SUSPEND));
 					return;
 				}
 				
 				//否则循环读取代码。
 				codes.add(codeLoader.loadNext());
-				progressModel.setLabelText(programAttrSet.getStringField(KEY_LOADING) + i);
+				progressModel.setLabelText(programAttrSet.getStringField(KEY_LOADING) + codeLoader.currentValue());
 				
 			}
+			
+			//结束循环并停止监视与计时
 			progressModel.end();
 			cti.stop();
 			
-			//循环结束，代码读取完毕。
 			//生成代码实例
 			CodeSerial codeList = new ArrayCodeSerial(codes.toArray(new Code[0]));
 			//将代码设置为前端。
@@ -111,6 +116,7 @@ public final class OpenFileRunnable extends AbstractCmr implements Runnable {
 			
 		}catch(Exception e){
 			e.printStackTrace();
+			viewControlPort.frameCp().traceInConsole(programAttrSet.getStringField(KEY_FAIL));
 			return;
 		}finally{
 			viewControlPort.frameCp().unlockEdit();

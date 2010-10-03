@@ -12,7 +12,7 @@ import javax.swing.border.EmptyBorder;
 
 import sun.swing.DefaultLookup;
 
-import com.dwarfeng.ncc.module.nc.Code;
+import com.dwarfeng.ncc.model.nc.Code;
 
 /**
  * ¥˙¬Î‰÷»æ¿‡°£
