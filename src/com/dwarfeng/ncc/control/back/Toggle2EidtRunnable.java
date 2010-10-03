@@ -77,7 +77,7 @@ public class Toggle2EidtRunnable extends AbstractCmr{
 			cti.start();
 			
 			//循环读取程序
-			for(;codePrinter.hasNext();){
+			while(codePrinter.hasNext()){
 				
 				//如果手动停止，则终止进程。
 				if(progressModel.isSuspend()){
@@ -111,7 +111,7 @@ public class Toggle2EidtRunnable extends AbstractCmr{
 			
 		}catch(Exception e){
 			e.printStackTrace();
-			
+			viewControlPort.frameCp().traceInConsole(programAttrSet.getStringField(KEY_FAIL));
 			return;
 		}finally{
 			viewControlPort.frameCp().unlockEdit();

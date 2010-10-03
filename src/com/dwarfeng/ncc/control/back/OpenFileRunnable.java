@@ -82,7 +82,7 @@ public final class OpenFileRunnable extends AbstractCmr implements Runnable {
 			cti.start();
 			
 			//循环读取程序
-			for(;codeLoader.hasNext();){
+			while(codeLoader.hasNext()){
 				
 				//如果手动停止，则终止进程。
 				if(progressModel.isSuspend()){

@@ -6,11 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
-import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
 import com.dwarfeng.dfunc.DwarfFunction;
 import com.dwarfeng.dfunc.io.CT;
@@ -34,6 +32,7 @@ import com.dwarfeng.ncc.view.gui.StatusLabelType;
  * @author DwArFeng
  * @since 1.8
  */
+@SuppressWarnings("unused")
 public final class NccControlManager extends AbstractControlManager<NccProgramControlPort, NccModelControlPort,
 NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 	
@@ -282,6 +281,17 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
 			
 			programControlPort.backInvoke(new Toggle2EidtRunnable(NccControlManager.this));
+		}
+
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.control.NccControlPort#commitCode(java.lang.String)
+		 */
+		@Override
+		public void commitCode(String str) {
+			// TODO Auto-generated method stub
+			
 		}
 		
 		

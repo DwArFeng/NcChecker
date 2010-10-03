@@ -51,6 +51,23 @@ public enum StringFieldKey {
 	/**另存为文件的描述*/
 	MENU_FILE_SAVEA_DES,
 	
+	/**提交更改*/
+	CODE_COMMIT,
+	/**提交更改的描述*/
+	CODE_COMMIT_DES,
+	/**提交更改并退出*/
+	CODE_COMMITNQ,
+	/**提交更改并退出的描述*/
+	CODE_COMMITNQ_DES,
+	/**放弃更改*/
+	CODE_DISCARD,
+	/**放弃更改的描述*/
+	CODE_DISCARD_DES,
+	/**放弃更改并退出*/
+	CODE_DISCARDNQ,
+	/**放弃更改并退出的描述*/
+	CODE_DISCARDNQ_DES,
+	
 	/**启动完毕*/
 	OUT_STARTFIN,
 	/**正在读取NC文件*/

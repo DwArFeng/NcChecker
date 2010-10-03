@@ -75,6 +75,12 @@ public interface NccControlPort extends ControlPort {
 	 */
 	public void toggleMode(Mode mode);
 	
+	/**
+	 * 提交指定文本的代码。
+	 * @param code 指定的代码。
+	 */
+	public void commitCode(String code);
+	
 //	/**
 //	 * 将代码序列打印在某个输出流上。
 //	 * @param codeSerial 指定的代码序列。

@@ -96,4 +96,9 @@ public interface FrameCp {
 	 */
 	public boolean getEditFlag();
 	
+	/**
+	 * 通知视图模型编辑的代码已经提交。
+	 */
+	public void knockForCommit();
+	
 }

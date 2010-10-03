@@ -41,8 +41,10 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.BevelBorder;
-import javax.swing.border.EmptyBorder;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.undo.UndoManager;
 
 import com.dwarfeng.dfunc.gui.swing.JAdjustableBorderPanel;
 import com.dwarfeng.dfunc.gui.swing.JConsole;
@@ -163,7 +165,15 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 	private static final StringFieldKey KEY_SAVE_DES = StringFieldKey.MENU_FILE_SAVE_DES;
 	private static final StringFieldKey KEY_SAVEA = StringFieldKey.MENU_FILE_SAVEA;
 	private static final StringFieldKey KEY_SAVEA_DES = StringFieldKey.MENU_FILE_SAVEA_DES;
-
+	
+	private static final StringFieldKey KEY_COMMIT = StringFieldKey.CODE_COMMIT;
+	private static final StringFieldKey KEY_COMMIT_DES = StringFieldKey.CODE_COMMIT_DES;
+	private static final StringFieldKey KEY_COMMITNQ = StringFieldKey.CODE_COMMITNQ;
+	private static final StringFieldKey CODE_COMMIT_DES = StringFieldKey.CODE_COMMITNQ_DES;
+	private static final StringFieldKey KEY_DISCARD = StringFieldKey.CODE_DISCARD;
+	private static final StringFieldKey KEY_DISCARD_DES = StringFieldKey.CODE_DISCARD_DES;
+	private static final StringFieldKey KEY_DISCARDNQ = StringFieldKey.CODE_DISCARDNQ;
+	private static final StringFieldKey KEY_DISCARDNQ_DES = StringFieldKey.CODE_DISCARDNQ_DES;
 	
 	private static final StringFieldKey KEY_NOMISSION = StringFieldKey.PROGRESS_NOMISSION;
 	
@@ -317,7 +327,6 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 						codePanel.remove(codeCenter1);
 						codePanel.add(codeCenter2, BorderLayout.CENTER);
 						codePanel.repaint();
-						editFlag = false;
 						break;
 					case INSPECT:
 						codePanel.remove(codeCenter2);
@@ -334,7 +343,6 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			@Override
 			public void setEditText(String text) {
 				codeCenter2.setText(text == null ? "" : text);
-				editFlag = false;
 			}
 
 			/*
@@ -343,7 +351,16 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 */
 			@Override
 			public boolean getEditFlag() {
-				return editFlag;
+				return codeCenter2.getEidtFlag();
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.gui.FrameCp#knockForCommit()
+			 */
+			@Override
+			public void knockForCommit() {
+				codeCenter2.clearEditFlag();
 			}
 		};
 		
@@ -363,13 +380,11 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 		private final CodeCenter2 codeCenter2;
 		private final CodeToolBar codeToolBar;
 		private final JPanel codePanel;
-		private boolean editFlag;
 		
 		public NccFrame(){
 			this.codeCenter1 = new CodeCenter1();
 			this.codeCenter2 = new CodeCenter2();
 			this.codeToolBar = new CodeToolBar();
-			this.editFlag = false;
 			
 			setSize(new Dimension(800, 600));
 			addWindowListener(new WindowAdapter() {
@@ -659,11 +674,23 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 		private class CodeCenter2 extends JPanel implements MutiStatus{
 			
 			private final JTextArea textArea;
+			private final JButton commit;
+			private final JButton commitNq;
+			private final JButton discard;
+			private final JButton discardNq;
+			
+			private final UndoManager undoManager;
 			
 			private boolean noneFileMask;
 			private boolean lockEditMask;
 			
+			private boolean changeFlag;
+			private boolean editFlag;
+			
 			public CodeCenter2() {
+				this.undoManager = new UndoManager();
+				this.changeFlag = false;
+				this.editFlag = false;
 				setLayout(new BorderLayout());
 				
 				JScrollPane scrollPane = new JScrollPane();
@@ -671,17 +698,69 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				
 				textArea = new JTextArea();
 				textArea.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+				textArea.getDocument().addUndoableEditListener(new UndoableEditListener() {
+					@Override
+					public void undoableEditHappened(UndoableEditEvent e) {
+						if(changeFlag) return;
+						undoManager.addEdit(e.getEdit());
+						editFlag = true;
+					}
+				});
 				
 				scrollPane.setViewportView(textArea);
 				
 				JPanel southPanel = new JPanel();
-				GridBagLayout southLayout = new GridBagLayout();
-				southLayout.columnWidths = new int[]{0,0,0,0,0};
-				southLayout.rowHeights = new int[]{0};
-				southLayout.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, 0.0};
-				southLayout.rowWeights = new double[]{0.0};
-				southPanel.setLayout(southLayout);
-				getContentPane().add(southPanel, BorderLayout.SOUTH);
+				GridBagLayout gbl_southPanel = new GridBagLayout();
+				gbl_southPanel.columnWidths = new int[]{0,0,0,0,0};
+				gbl_southPanel.rowHeights = new int[]{0};
+				gbl_southPanel.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, 0.0};
+				gbl_southPanel.rowWeights = new double[]{0.0};
+				southPanel.setLayout(gbl_southPanel);
+				add(southPanel, BorderLayout.SOUTH);
+				
+				discardNq = new JButton();
+				discardNq.setText(programAttrSet.getStringField(KEY_DISCARDNQ));
+				discardNq.setToolTipText(programAttrSet.getStringField(KEY_DISCARDNQ_DES));
+				GridBagConstraints gbc_discardNq = new GridBagConstraints();
+				gbc_discardNq.anchor = GridBagConstraints.WEST;
+				gbc_discardNq.fill = GridBagConstraints.BOTH;
+				gbc_discardNq.insets = new Insets(0, 0, 0, 5);
+				gbc_discardNq.gridx = 0;
+				gbc_discardNq.gridy = 0;
+				southPanel.add(discardNq, gbc_discardNq);
+				
+				discard = new JButton();
+				discard.setText(programAttrSet.getStringField(KEY_DISCARD));
+				discard.setToolTipText(programAttrSet.getStringField(KEY_DISCARD_DES));
+				GridBagConstraints gbc_discard = new GridBagConstraints();
+				gbc_discard.anchor = GridBagConstraints.WEST;
+				gbc_discard.fill = GridBagConstraints.BOTH;
+				gbc_discard.insets = new Insets(0, 0, 0, 5);
+				gbc_discard.gridx = 1;
+				gbc_discard.gridy = 0;
+				southPanel.add(discard, gbc_discard);
+				
+				commit = new JButton();
+				commit.setText(programAttrSet.getStringField(KEY_COMMIT));
+				commit.setToolTipText(programAttrSet.getStringField(KEY_COMMIT_DES));
+				GridBagConstraints gbc_commit = new GridBagConstraints();
+				gbc_commit.anchor = GridBagConstraints.WEST;
+				gbc_commit.fill = GridBagConstraints.BOTH;
+				gbc_commit.insets = new Insets(0, 5, 0, 0);
+				gbc_commit.gridx = 3;
+				gbc_commit.gridy = 0;
+				southPanel.add(commit, gbc_commit);
+				
+				commitNq = new JButton();
+				commitNq.setText(programAttrSet.getStringField(KEY_COMMITNQ));
+				commitNq.setToolTipText(programAttrSet.getStringField(KEY_COMMIT_DES));
+				GridBagConstraints gbc_commitNq = new GridBagConstraints();
+				gbc_commitNq.anchor = GridBagConstraints.WEST;
+				gbc_commitNq.fill = GridBagConstraints.BOTH;
+				gbc_commitNq.insets = new Insets(0, 5, 0, 0);
+				gbc_commitNq.gridx = 4;
+				gbc_commitNq.gridy = 0;
+				southPanel.add(commitNq, gbc_commitNq);
 				
 			}
 
@@ -713,9 +792,23 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				refresh();
 			}
 			
+			public void clearEditFlag(){
+				this.editFlag = false;
+			}
+			
 			public void setText(String text){
-				textArea.setText(text);
-				revalidate();
+				changeFlag = true;
+				try{
+					textArea.setText(text);
+					undoManager.discardAllEdits();
+					revalidate();
+				}finally{
+					changeFlag = false;
+				}
+			}
+			
+			public boolean getEidtFlag(){
+				return this.editFlag;
 			}
 			
 			private void refresh() {
