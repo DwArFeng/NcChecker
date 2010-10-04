@@ -38,7 +38,6 @@ public class Toggle2InspectRunnable extends AbstractCmr {
 	
 	//------------------------------------------------------------------------------------------------
 
-	private final boolean ignoreAnswer;
 	private final AnswerType answerType;
 	
 	/**
@@ -49,12 +48,9 @@ public class Toggle2InspectRunnable extends AbstractCmr {
 	 * @throws NullPointerException 不忽略回答的情况下回答为 <code>null</code>。
 	 */
 	public Toggle2InspectRunnable(
-			NccControlManager controlManager, boolean ignoreAnswer, AnswerType type) {
+			NccControlManager controlManager,AnswerType type) {
 		super(controlManager);
-		if(!ignoreAnswer){
-			Objects.requireNonNull(type);
-		}
-		this.ignoreAnswer = ignoreAnswer;
+		Objects.requireNonNull(type);
 		this.answerType = type;
 	}
 
@@ -64,22 +60,17 @@ public class Toggle2InspectRunnable extends AbstractCmr {
 	 */
 	@Override
 	public void run() {
-		if(ignoreAnswer){
-			directInspect();
-		}else{
-			switch (answerType) {
-				case CANCEL:
-					directEdit();
-					return;
-				case NO:
-					directInspect();
-					return;
-				case YES:
-					commitInspect();
-					return;
-			}
+		switch (answerType) {
+			case CANCEL:
+				directEdit();
+				return;
+			case NO:
+				directInspect();
+				return;
+			case YES:
+				commitInspect();
+				return;
 		}
-		
 	}
 
 	private void commitInspect() {

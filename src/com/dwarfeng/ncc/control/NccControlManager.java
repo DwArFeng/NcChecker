@@ -15,6 +15,7 @@ import com.dwarfeng.dfunc.DwarfFunction;
 import com.dwarfeng.dfunc.io.CT;
 import com.dwarfeng.dfunc.io.CT.OutputType;
 import com.dwarfeng.dfunc.prog.mvc.AbstractControlManager;
+import com.dwarfeng.ncc.control.back.CloseFrontFileRunnable;
 import com.dwarfeng.ncc.control.back.NewFileRunnable;
 import com.dwarfeng.ncc.control.back.OpenFileRunnable;
 import com.dwarfeng.ncc.control.back.Toggle2EidtRunnable;
@@ -191,22 +192,10 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 			if(!modelControlPort.frontCp().hasFrontCode()) throw new NullPointerException();
 			
 			//可能需要保存文件
-			perhapseSaveFrontFile();
+			FrontFileSaveCheckResult result = checkSaveFrontFile();
 			
-			try{
-				viewControlPort.frameCp().lockEdit();
-				//从视图中撤下代码段
-				viewControlPort.frameCp().showCode(null);
-				//移除前台模型中的代码段
-				modelControlPort.frontCp().setFrontCodeSerial(null, null, false);
-				//设置视图为无文件模式
-				viewControlPort.frameCp().noneFileMode(true);
-				
-			}finally{
-				viewControlPort.frameCp().unlockEdit();
-			}
-			// TODO Auto-generated method stub
-			
+			//后台中运行指定方法
+			programControlPort.backInvoke(new CloseFrontFileRunnable(NccControlManager.this, result.saveFlag));
 		}
 		
 		/**
@@ -231,34 +220,27 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 			// TODO Auto-generated method stub
 		}
 		
-		/**
-		 * 如果某个操作可能会涉及到保存文件，则调用该方法。
-		 * 该方法会检车是否存在前台文件，如果有前台文件的话，则将其保存。
-		 */
-		private void perhapseSaveFrontFile(){
-			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
-			if(modelControlPort.frontCp().hasFrontCode()) saveFrontFile();
-		}
-		
-		class FrontFileSaveAskResult {
+		class FrontFileSaveCheckResult {
 
-			public final boolean ignoreMask;
 			public final boolean saveFlag;
 			public final boolean suspendFlag;
 			
-			public FrontFileSaveAskResult(boolean ignoreMask, boolean saveFlag, boolean suspendFlag){
-				this.ignoreMask = ignoreMask;
+			public FrontFileSaveCheckResult(boolean saveFlag, boolean suspendFlag){
 				this.saveFlag = saveFlag;
 				this.suspendFlag = suspendFlag;
 			}
 		}
 		
-		private FrontFileSaveAskResult askSaveFrontFile(){
+		/**
+		 * 检查（如有必要询问用户）是否要保存文件
+		 * @return 检查的结果。
+		 */
+		private FrontFileSaveCheckResult checkSaveFrontFile(){
 			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
 			if(!modelControlPort.frontCp().hasFrontCode()) throw new NullPointerException();
 			
 			if(!modelControlPort.frontCp().needSave()){
-				return new FrontFileSaveAskResult(true, false, false);
+				return new FrontFileSaveCheckResult(false, false);
 			}else{
 				AnswerType type = viewControlPort.notifyCp().showConfirm(
 						programAttrSet.getStringField(KEY_SAVE_MESSAGE), 
@@ -268,13 +250,13 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 				);
 				switch (type) {
 					case CANCEL:
-						return new FrontFileSaveAskResult(false, false, true);
+						return new FrontFileSaveCheckResult(false, true);
 					case NO:
-						return new FrontFileSaveAskResult(false, false, false);
+						return new FrontFileSaveCheckResult(false, false);
 					case YES:
-						return new FrontFileSaveAskResult(false, true, false);
+						return new FrontFileSaveCheckResult(true, false);
 					default:
-						return new FrontFileSaveAskResult(true, false, false);
+						return new FrontFileSaveCheckResult(false, false);
 				}
 			}
 		}
@@ -329,17 +311,18 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 				);
 				
 				programControlPort.backInvoke(
-						new Toggle2InspectRunnable(NccControlManager.this, false, type));
+						new Toggle2InspectRunnable(NccControlManager.this, type));
 			}else{
 				
 				programControlPort.backInvoke(
-						new Toggle2InspectRunnable(NccControlManager.this, true, null));
+						new Toggle2InspectRunnable(NccControlManager.this, AnswerType.NO));
 			}
 			
 		}
 
 		private void toggle2Edit() {
 			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
+			
 			
 			programControlPort.backInvoke(new Toggle2EidtRunnable(NccControlManager.this));
 		}
@@ -357,6 +340,10 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 		
 		
 	};
+	
+	
+	
+	
 	
 	
 	

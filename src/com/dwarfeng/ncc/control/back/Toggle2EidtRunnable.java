@@ -85,6 +85,7 @@ public class Toggle2EidtRunnable extends AbstractCmr{
 				//如果手动停止，则终止进程。
 				if(progressModel.isSuspend()){
 					viewControlPort.frameCp().traceInConsole(programAttrSet.getStringField(KEY_SUSPEND));
+					viewControlPort.frameCp().knockForMode(Mode.INSPECT);
 					return;
 				}
 				
