@@ -343,19 +343,22 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 * @see com.dwarfeng.ncc.view.gui.FrameCp#toggleMode(com.dwarfeng.ncc.control.NccControlPort.CodePanelMode)
 			 */
 			@Override
-			public void toggleMode(Mode mode) {
+			public void knockForMode(Mode mode) {
+				codeToolBar.setMode(mode);
 				switch(mode){
 					case EDIT:
-						codePanel.remove(codeCenter1);
-						codePanel.add(codeCenter2, BorderLayout.CENTER);
-						codePanel.repaint();
-						codeToolBar.setMode(mode);
+						if(Objects.nonNull(codeCenter1.getParent()) && codeCenter1.getParent().equals(codePanel)){
+							codePanel.remove(codeCenter1);
+							codePanel.add(codeCenter2, BorderLayout.CENTER);
+							codePanel.repaint();
+						}
 						break;
 					case INSPECT:
-						codePanel.remove(codeCenter2);
-						codePanel.add(codeCenter1, BorderLayout.CENTER);
-						codePanel.repaint();
-						codeToolBar.setMode(mode);
+						if(Objects.nonNull(codeCenter2.getParent()) && codeCenter2.getParent().equals(codePanel)){
+							codePanel.remove(codeCenter2);
+							codePanel.add(codeCenter1, BorderLayout.CENTER);
+							codePanel.repaint();
+						}
 						break;
 				}
 			}
@@ -385,6 +388,24 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			@Override
 			public void knockForCommit() {
 				codeCenter2.clearEditFlag();
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.gui.FrameCp#getEditLine()
+			 */
+			@Override
+			public int getEditLine() {
+				return codeCenter2.getLineCount();
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.gui.FrameCp#getEditText()
+			 */
+			@Override
+			public String getEditText() {
+				return codeCenter2.getText();
 			}
 		};
 		
@@ -786,6 +807,14 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				gbc_commitNq.gridy = 0;
 				southPanel.add(commitNq, gbc_commitNq);
 				
+			}
+
+			public String getText() {
+				return textArea.getText();
+			}
+
+			public int getLineCount() {
+				return textArea.getLineCount();
 			}
 
 			/* (non-Javadoc)

@@ -52,5 +52,19 @@ public final class StringCode implements Code{
 		this.codeLabel = label;
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return new StringBuilder()
+				.append("StringCode [content = ")
+				.append(content())
+				.append(" label = ")
+				.append(getLabel())
+				.append("]")
+				.toString();
+	}
 
 }

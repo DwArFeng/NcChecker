@@ -82,13 +82,25 @@ public interface FrameCp {
 	 * @param mode 指定的模式。
 	 * @throws NullPointerException 入口参数为 <code>null</code>。
 	 */
-	public void toggleMode(Mode mode);
+	public void knockForMode(Mode mode);
 	
 	/**
 	 * 设置编辑面板的文本。
 	 * @param text 指定的文本。
 	 */
 	public void setEditText(String text);
+	
+	/**
+	 * 返回编辑界面中文本的总行数。
+	 * @return 编辑界面中文本的总行数。
+	 */
+	public int getEditLine();
+	
+	/**
+	 * 获取编辑界面中的文本。
+	 * @return 编辑界面中的文本。
+	 */
+	public String getEditText();
 	
 	/**
 	 * 获取编辑模式是否需要提交的标记。

@@ -79,5 +79,10 @@ public interface FrontCp{
 	 * @throws IllegalStateException 前台代码不存在。
 	 */
 	public boolean needSave();
+	
+	/**
+	 * 通知前台模型，文件已经保存了。
+	 */
+	public void knockForSave();
 
 }

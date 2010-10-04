@@ -18,6 +18,7 @@ import com.dwarfeng.dfunc.prog.mvc.AbstractControlManager;
 import com.dwarfeng.ncc.control.back.NewFileRunnable;
 import com.dwarfeng.ncc.control.back.OpenFileRunnable;
 import com.dwarfeng.ncc.control.back.Toggle2EidtRunnable;
+import com.dwarfeng.ncc.control.back.Toggle2InspectRunnable;
 import com.dwarfeng.ncc.model.NccModelControlPort;
 import com.dwarfeng.ncc.model.front.CodeLoader;
 import com.dwarfeng.ncc.program.NccProgramAttrSet;
@@ -41,7 +42,7 @@ public final class NccControlManager extends AbstractControlManager<NccProgramCo
 NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 	
 	//-----------------------------以下是需要使用的各种字段键值------------------------------------
-	
+
 	private static final String KEY_NOTINIT = "控制管理器还未初始化。";
 	private static final String KEY_INITED = "控制管理器已经初始化了。";
 	
@@ -50,13 +51,14 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 	
 	private static final StringFieldKey KEY_COMMIT_TITLE = StringFieldKey.MSG_COMMIT_TITLE;
 	private static final StringFieldKey KEY_COMMIT_MESSAGE = StringFieldKey.MSG_COMMIT_MESSAGE;
+	private static final StringFieldKey KEY_SAVE_TITLE = StringFieldKey.MSG_SAVE_TITLE;
+	private static final StringFieldKey KEY_SAVE_MESSAGE = StringFieldKey.MSG_SAVE_MESSAGE;
 	
 	//------------------------------------------------------------------------------------------------
 	
 	private final NccControlPort controlPort = new NccControlPort() {
 		
 		private boolean startFlag = false;
-		private Mode currentMode;
 		
 		/*
 		 * (non-Javadoc)
@@ -66,7 +68,6 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 		public void startProgram() {
 			if(startFlag) throw new IllegalStateException(KEY_INITED);
 			startFlag = true;
-			currentMode = Mode.INSPECT;
 			
 //			//由于界面支持该外观，所以不可能抛出异常。
 //			try {
@@ -214,7 +215,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 		 */
 		private void perhapsCloseFrontFile(){
 			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
-			if(	modelControlPort.frontCp().hasFrontCode()) closeFrontFile();
+			if(modelControlPort.frontCp().hasFrontCode()) closeFrontFile();
 		}
 
 
@@ -237,6 +238,45 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 		private void perhapseSaveFrontFile(){
 			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
 			if(modelControlPort.frontCp().hasFrontCode()) saveFrontFile();
+		}
+		
+		class FrontFileSaveAskResult {
+
+			public final boolean ignoreMask;
+			public final boolean saveFlag;
+			public final boolean suspendFlag;
+			
+			public FrontFileSaveAskResult(boolean ignoreMask, boolean saveFlag, boolean suspendFlag){
+				this.ignoreMask = ignoreMask;
+				this.saveFlag = saveFlag;
+				this.suspendFlag = suspendFlag;
+			}
+		}
+		
+		private FrontFileSaveAskResult askSaveFrontFile(){
+			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
+			if(!modelControlPort.frontCp().hasFrontCode()) throw new NullPointerException();
+			
+			if(!modelControlPort.frontCp().needSave()){
+				return new FrontFileSaveAskResult(true, false, false);
+			}else{
+				AnswerType type = viewControlPort.notifyCp().showConfirm(
+						programAttrSet.getStringField(KEY_SAVE_MESSAGE), 
+						programAttrSet.getStringField(KEY_COMMIT_TITLE), 
+						OptionType.YES_NO_CANCEL, 
+						MessageType.QUESTION, null
+				);
+				switch (type) {
+					case CANCEL:
+						return new FrontFileSaveAskResult(false, false, true);
+					case NO:
+						return new FrontFileSaveAskResult(false, false, false);
+					case YES:
+						return new FrontFileSaveAskResult(false, true, false);
+					default:
+						return new FrontFileSaveAskResult(true, false, false);
+				}
+			}
 		}
 
 
@@ -288,7 +328,12 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 						MessageType.QUESTION, null
 				);
 				
-				viewControlPort.frameCp().toggleMode(Mode.EDIT);
+				programControlPort.backInvoke(
+						new Toggle2InspectRunnable(NccControlManager.this, false, type));
+			}else{
+				
+				programControlPort.backInvoke(
+						new Toggle2InspectRunnable(NccControlManager.this, true, null));
 			}
 			
 		}
@@ -314,6 +359,8 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 	};
 	
 	
+	
+
 	
 	
 	

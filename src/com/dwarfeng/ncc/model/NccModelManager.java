@@ -194,6 +194,15 @@ public final class NccModelManager extends AbstractModelManager<NccModelControlP
 					rollback.removeLast();
 				}
 			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.model.front.FrontCp#knockForSave()
+			 */
+			@Override
+			public void knockForSave() {
+				saveFlag = false;
+			}
 			
 		};
 		

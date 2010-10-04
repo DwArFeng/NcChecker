@@ -1,5 +1,6 @@
 package com.dwarfeng.ncc.model.front;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
@@ -7,7 +8,7 @@ import java.io.IOException;
  * @author DwArFeng
  * @since 1.8
  */
-public interface CodePrinter {
+public interface CodePrinter extends Closeable{
 	
 	/**
 	 * 获取总代码量（工作量）。

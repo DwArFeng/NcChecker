@@ -144,7 +144,7 @@ public class CodeRender extends JLabel implements ListCellRenderer<Code> {
             setForeground(list.getForeground());
         }
 
-		setText(value.content());
+		setText((value.content() == null || value.content().equals("")) ? " " : value.content());
 		return this;
 	}
 	

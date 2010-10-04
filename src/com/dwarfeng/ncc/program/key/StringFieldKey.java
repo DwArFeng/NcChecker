@@ -21,6 +21,8 @@ public enum StringFieldKey {
 	PROGRESS_FILE_NOWLOADING,
 	/**正在进入编辑模式*/
 	PROGRESS_CODE_EDIT,
+	/**提交代码*/
+	PROGRESS_COMMIT,
 	
 	/**就绪*/
 	LABEL_GETREADY,
@@ -90,9 +92,21 @@ public enum StringFieldKey {
 	OUT_EDIT_FAIL,
 	/**进入编辑模式中止*/
 	OUT_EDIT_SUSPEND,
+	/**开始提交代码*/
+	OUT_COMMIT_START,
+	/**提交代码统计*/
+	OUT_COMMIT_STATS,
+	/**提交代码失败*/
+	OUT_COMMIT_FAIL,
+	/**提交代码中止*/
+	OUT_COMMIT_SUSPEND,
 	
 	/**询问提交的标题*/
 	MSG_COMMIT_TITLE,
 	/**询问提交的信息*/
-	MSG_COMMIT_MESSAGE
+	MSG_COMMIT_MESSAGE,
+	/**询问保存的标题*/
+	MSG_SAVE_TITLE,
+	/**询问保存的信息*/
+	MSG_SAVE_MESSAGE,
 }

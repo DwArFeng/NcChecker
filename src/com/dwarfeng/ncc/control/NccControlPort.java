@@ -62,8 +62,9 @@ public interface NccControlPort extends ControlPort {
 	 * @since 1.8
 	 */
 	public enum Mode{
-		
+		/**查看模式*/
 		INSPECT,
+		/**编辑模式*/
 		EDIT,
 	}
 	

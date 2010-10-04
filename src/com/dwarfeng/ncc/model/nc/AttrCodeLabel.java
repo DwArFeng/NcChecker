@@ -57,5 +57,19 @@ public final class AttrCodeLabel implements CodeLabel {
 	public int getLineIndex() {
 		return lineIndex;
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return new StringBuilder()
+				.append("AttrCodeLabel [line = ")
+				.append(getLineIndex())
+				.append("]")
+				.toString();
+	}
+	
 
 }

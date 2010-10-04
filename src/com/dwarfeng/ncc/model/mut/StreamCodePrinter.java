@@ -87,5 +87,14 @@ public class StreamCodePrinter implements CodePrinter {
 	public int currentValue() {
 		return index;
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see java.io.Closeable#close()
+	 */
+	@Override
+	public void close() throws IOException {
+		out.close();
+	}
 
 }

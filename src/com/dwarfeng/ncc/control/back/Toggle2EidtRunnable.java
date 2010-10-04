@@ -7,6 +7,7 @@ import com.dwarfeng.dfunc.io.StringOutputStream;
 import com.dwarfeng.dfunc.num.UnitTrans.Time;
 import com.dwarfeng.ncc.control.NccControlManager;
 import com.dwarfeng.ncc.control.NccControlPort.Mode;
+import com.dwarfeng.ncc.model.front.CodePrinter;
 import com.dwarfeng.ncc.model.mut.StreamCodePrinter;
 import com.dwarfeng.ncc.model.nc.CodeSerial;
 import com.dwarfeng.ncc.program.key.StringFieldKey;
@@ -46,6 +47,7 @@ public class Toggle2EidtRunnable extends AbstractCmr{
 	@Override
 	public void run() {
 		StringOutputStream out = null;
+		CodePrinter codePrinter = null;
 		
 		//界面编辑锁定
 		viewControlPort.frameCp().lockEdit();
@@ -54,7 +56,8 @@ public class Toggle2EidtRunnable extends AbstractCmr{
 			//初始必要的变量
 			CodeSerial codeSerial = modelControlPort.frontCp().getFrontCodeSerial();
 			out = new StringOutputStream();
-			final StreamCodePrinter codePrinter = new StreamCodePrinter(codeSerial, out);
+			
+			codePrinter = new StreamCodePrinter(codeSerial, out);
 			
 			//输出开始信息
 			viewControlPort.frameCp().traceInConsole(
@@ -100,7 +103,7 @@ public class Toggle2EidtRunnable extends AbstractCmr{
 			String text = out.toString();
 			
 			//视图转换为编辑模式
-			viewControlPort.frameCp().toggleMode(Mode.EDIT);
+			viewControlPort.frameCp().knockForMode(Mode.EDIT);
 			//渲染文本
 			viewControlPort.frameCp().setEditText(text);
 			//生成报告
@@ -115,9 +118,9 @@ public class Toggle2EidtRunnable extends AbstractCmr{
 			return;
 		}finally{
 			viewControlPort.frameCp().unlockEdit();
-			if(out != null){
+			if(codePrinter != null){
 				try {
-					out.close();
+					codePrinter.close();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
