@@ -104,9 +104,9 @@ public final class OpenFileRunnable extends AbstractCmr implements Runnable {
 			//生成代码实例
 			CodeSerial codeList = new ArrayCodeSerial(codes.toArray(new Code[0]));
 			//将代码设置为前端。
-			moduleControlPort.frontCp().setFrontCodeSerial(codeList, file, false);
+			modelControlPort.frontCp().setFrontCodeSerial(codeList, file, false);
 			//在视图中渲染代码。
-			viewControlPort.frameCp().showCode(moduleControlPort.frontCp().getCodeSerial());
+			viewControlPort.frameCp().showCode(modelControlPort.frontCp().getCodeSerial());
 			viewControlPort.frameCp().noneFileMode(false);
 			//生成报告
 			viewControlPort.frameCp().traceInConsole(

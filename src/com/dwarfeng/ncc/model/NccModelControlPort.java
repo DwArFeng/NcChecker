@@ -1,6 +1,6 @@
 package com.dwarfeng.ncc.model;
 
-import com.dwarfeng.dfunc.prog.mvc.ModuleControlPort;
+import com.dwarfeng.dfunc.prog.mvc.ModelControlPort;
 import com.dwarfeng.ncc.model.expl.ExplCp;
 import com.dwarfeng.ncc.model.front.FrontCp;
 
@@ -9,7 +9,7 @@ import com.dwarfeng.ncc.model.front.FrontCp;
  * @author DwArFeng
  * @since 1.8
  */
-public interface NccModelControlPort extends ModuleControlPort {
+public interface NccModelControlPort extends ModelControlPort {
 	
 	/**
 	 * ≥ı ºªØ°£

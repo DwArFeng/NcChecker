@@ -51,7 +51,7 @@ public final class AttrCodeLabel implements CodeLabel {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.nc.CodeLabel#getLineIndex()
+	 * @see com.dwarfeng.ncc.model.nc.CodeLabel#getLineIndex()
 	 */
 	@Override
 	public int getLineIndex() {

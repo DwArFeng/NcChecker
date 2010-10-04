@@ -27,7 +27,7 @@ public final class StringCode implements Code{
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.nc.Code#content()
+	 * @see com.dwarfeng.ncc.model.nc.Code#content()
 	 */
 	@Override
 	public String content() {
@@ -36,7 +36,7 @@ public final class StringCode implements Code{
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.nc.Code#getLabel()
+	 * @see com.dwarfeng.ncc.model.nc.Code#getLabel()
 	 */
 	@Override
 	public CodeLabel getLabel() {
@@ -45,7 +45,7 @@ public final class StringCode implements Code{
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.nc.Code#setLabel(com.dwarfeng.ncc.module.nc.CodeLabel)
+	 * @see com.dwarfeng.ncc.model.nc.Code#setLabel(com.dwarfeng.ncc.model.nc.CodeLabel)
 	 */
 	@Override
 	public void setLabel(CodeLabel label) {

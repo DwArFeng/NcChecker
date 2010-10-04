@@ -49,7 +49,7 @@ public final class AcDoubleRotorPoint implements ToolPoint{
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.cnc.NCPoint#getPoint()
+	 * @see com.dwarfeng.ncc.model.cnc.NCPoint#getPoint()
 	 */
 	@Override
 	public Vector3D getPosition() {
@@ -58,7 +58,7 @@ public final class AcDoubleRotorPoint implements ToolPoint{
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.cnc.NCPoint#getNorVec()
+	 * @see com.dwarfeng.ncc.model.cnc.NCPoint#getNorVec()
 	 */
 	@Override
 	public Vector3D getDirection() {

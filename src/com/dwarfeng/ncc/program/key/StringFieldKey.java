@@ -91,4 +91,8 @@ public enum StringFieldKey {
 	/**进入编辑模式中止*/
 	OUT_EDIT_SUSPEND,
 	
+	/**询问提交的标题*/
+	MSG_COMMIT_TITLE,
+	/**询问提交的信息*/
+	MSG_COMMIT_MESSAGE
 }

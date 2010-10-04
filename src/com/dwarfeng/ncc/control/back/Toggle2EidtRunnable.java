@@ -3,7 +3,7 @@ package com.dwarfeng.ncc.control.back;
 import java.io.IOException;
 
 import com.dwarfeng.dfunc.dt.CodeTimer;
-import com.dwarfeng.dfunc.io.StringBuilderOutputStream;
+import com.dwarfeng.dfunc.io.StringOutputStream;
 import com.dwarfeng.dfunc.num.UnitTrans.Time;
 import com.dwarfeng.ncc.control.NccControlManager;
 import com.dwarfeng.ncc.control.NccControlPort.Mode;
@@ -45,15 +45,15 @@ public class Toggle2EidtRunnable extends AbstractCmr{
 	 */
 	@Override
 	public void run() {
-		StringBuilderOutputStream out = null;
+		StringOutputStream out = null;
 		
 		//界面编辑锁定
 		viewControlPort.frameCp().lockEdit();
 		
 		try{
 			//初始必要的变量
-			CodeSerial codeSerial = moduleControlPort.frontCp().getFrontCodeSerial();
-			out = new StringBuilderOutputStream();
+			CodeSerial codeSerial = modelControlPort.frontCp().getFrontCodeSerial();
+			out = new StringOutputStream();
 			final StreamCodePrinter codePrinter = new StreamCodePrinter(codeSerial, out);
 			
 			//输出开始信息

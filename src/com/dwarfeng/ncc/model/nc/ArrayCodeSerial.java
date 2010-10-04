@@ -34,7 +34,7 @@ public final class ArrayCodeSerial implements CodeSerial {
 	
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.nc.NcCode#getCode(int)
+	 * @see com.dwarfeng.ncc.model.nc.NcCode#getCode(int)
 	 */
 	@Override
 	public Code getCode(int lineIndex) {
@@ -94,7 +94,7 @@ public final class ArrayCodeSerial implements CodeSerial {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.nc.CodeSerial#getTotle()
+	 * @see com.dwarfeng.ncc.model.nc.CodeSerial#getTotle()
 	 */
 	@Override
 	public int getTotle() {
@@ -103,7 +103,7 @@ public final class ArrayCodeSerial implements CodeSerial {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.nc.CodeSerial#toArray()
+	 * @see com.dwarfeng.ncc.model.nc.CodeSerial#toArray()
 	 */
 	@Override
 	public Code[] toArray() {
@@ -112,7 +112,7 @@ public final class ArrayCodeSerial implements CodeSerial {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.nc.CodeSerial#toArray(int, int)
+	 * @see com.dwarfeng.ncc.model.nc.CodeSerial#toArray(int, int)
 	 */
 	@Override
 	public Code[] toArray(int start, int end) {
@@ -128,7 +128,7 @@ public final class ArrayCodeSerial implements CodeSerial {
 	
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.nc.CodeSerial#getMaxLineNumber()
+	 * @see com.dwarfeng.ncc.model.nc.CodeSerial#getMaxLineNumber()
 	 */
 	@Override
 	public int getMaxLineNumber() {
@@ -138,7 +138,7 @@ public final class ArrayCodeSerial implements CodeSerial {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.nc.CodeSerial#getMinLineNumber()
+	 * @see com.dwarfeng.ncc.model.nc.CodeSerial#getMinLineNumber()
 	 */
 	@Override
 	public int getMinLineNumber() {

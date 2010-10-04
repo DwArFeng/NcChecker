@@ -52,7 +52,7 @@ public class StreamCodePrinter implements CodePrinter {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.front.CodePrinter#getTotleCode()
+	 * @see com.dwarfeng.ncc.model.front.CodePrinter#getTotleCode()
 	 */
 	@Override
 	public int getTotleCode() {
@@ -61,7 +61,7 @@ public class StreamCodePrinter implements CodePrinter {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.front.CodePrinter#hasNext()
+	 * @see com.dwarfeng.ncc.model.front.CodePrinter#hasNext()
 	 */
 	@Override
 	public boolean hasNext() {
@@ -70,7 +70,7 @@ public class StreamCodePrinter implements CodePrinter {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.front.CodePrinter#saveNext()
+	 * @see com.dwarfeng.ncc.model.front.CodePrinter#saveNext()
 	 */
 	@Override
 	public void printNext() throws IOException {
@@ -81,7 +81,7 @@ public class StreamCodePrinter implements CodePrinter {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.front.CodePrinter#currentValue()
+	 * @see com.dwarfeng.ncc.model.front.CodePrinter#currentValue()
 	 */
 	@Override
 	public int currentValue() {

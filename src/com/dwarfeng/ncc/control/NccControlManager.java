@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
+import javax.swing.JOptionPane;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -25,6 +26,9 @@ import com.dwarfeng.ncc.program.conf.FrontConfig;
 import com.dwarfeng.ncc.program.conf.MfAppearConfig;
 import com.dwarfeng.ncc.program.key.StringFieldKey;
 import com.dwarfeng.ncc.view.NccViewControlPort;
+import com.dwarfeng.ncc.view.gui.NotifyCp.AnswerType;
+import com.dwarfeng.ncc.view.gui.NotifyCp.MessageType;
+import com.dwarfeng.ncc.view.gui.NotifyCp.OptionType;
 import com.dwarfeng.ncc.view.gui.StatusLabelType;
 
 /**
@@ -43,6 +47,9 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 	
 	private static final StringFieldKey KEY_GETREADY = StringFieldKey.LABEL_GETREADY;
 	private static final StringFieldKey KEY_STARTFIN = StringFieldKey.OUT_STARTFIN;
+	
+	private static final StringFieldKey KEY_COMMIT_TITLE = StringFieldKey.MSG_COMMIT_TITLE;
+	private static final StringFieldKey KEY_COMMIT_MESSAGE = StringFieldKey.MSG_COMMIT_MESSAGE;
 	
 	//------------------------------------------------------------------------------------------------
 	
@@ -68,7 +75,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 			
 			//各控制站点初始化
 			programControlPort.init();
-			moduleControlPort.init();
+			modelControlPort.init();
 			viewControlPort.init();
 			
 			//读取配置文件
@@ -84,8 +91,8 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 			FrontConfig fc = FrontConfig.DEFAULT;
 			
 			//各个管理器初始化参数
-			moduleControlPort.frontCp().applyFontConfig(fc);
-			moduleControlPort.frontCp().setFrontCodeSerial(null,null,false);
+			modelControlPort.frontCp().applyFontConfig(fc);
+			modelControlPort.frontCp().setFrontCodeSerial(null,null,false);
 			viewControlPort.frameCp().applyAppearanceConfig(mfac);
 			viewControlPort.frameCp().noneFileMode(true);
 			
@@ -163,7 +170,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 			CodeLoader codeLoader = null;
 			try{
 				in = new FileInputStream(file);
-				codeLoader = moduleControlPort.explCp().newNcCodeLoader(in);
+				codeLoader = modelControlPort.explCp().newNcCodeLoader(in);
 			}catch(IOException e){
 				return;
 			}
@@ -180,7 +187,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 		@Override
 		public void closeFrontFile() {
 			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
-			if(!moduleControlPort.frontCp().hasFrontCode()) throw new NullPointerException();
+			if(!modelControlPort.frontCp().hasFrontCode()) throw new NullPointerException();
 			
 			//可能需要保存文件
 			perhapseSaveFrontFile();
@@ -190,7 +197,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 				//从视图中撤下代码段
 				viewControlPort.frameCp().showCode(null);
 				//移除前台模型中的代码段
-				moduleControlPort.frontCp().setFrontCodeSerial(null, null, false);
+				modelControlPort.frontCp().setFrontCodeSerial(null, null, false);
 				//设置视图为无文件模式
 				viewControlPort.frameCp().noneFileMode(true);
 				
@@ -207,7 +214,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 		 */
 		private void perhapsCloseFrontFile(){
 			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
-			if(	moduleControlPort.frontCp().hasFrontCode()) closeFrontFile();
+			if(	modelControlPort.frontCp().hasFrontCode()) closeFrontFile();
 		}
 
 
@@ -218,7 +225,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 		@Override
 		public void saveFrontFile() {
 			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
-			if(!moduleControlPort.frontCp().hasFrontCode()) throw new NullPointerException();
+			if(!modelControlPort.frontCp().hasFrontCode()) throw new NullPointerException();
 			
 			// TODO Auto-generated method stub
 		}
@@ -229,7 +236,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 		 */
 		private void perhapseSaveFrontFile(){
 			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
-			if(moduleControlPort.frontCp().hasFrontCode()) saveFrontFile();
+			if(modelControlPort.frontCp().hasFrontCode()) saveFrontFile();
 		}
 
 
@@ -271,10 +278,19 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 
 		private void toggle2Inspect() {
 			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
-			// TODO Auto-generated method stub
-			//FOO
 			
-			viewControlPort.frameCp().toggleMode(Mode.INSPECT);
+			//首先检查是否还有未提交的更改
+			if(viewControlPort.frameCp().getEditFlag()){
+				AnswerType type = viewControlPort.notifyCp().showConfirm(
+						programAttrSet.getStringField(KEY_COMMIT_MESSAGE), 
+						programAttrSet.getStringField(KEY_COMMIT_TITLE), 
+						OptionType.YES_NO_CANCEL, 
+						MessageType.QUESTION, null
+				);
+				
+				viewControlPort.frameCp().toggleMode(Mode.EDIT);
+			}
+			
 		}
 
 		private void toggle2Edit() {

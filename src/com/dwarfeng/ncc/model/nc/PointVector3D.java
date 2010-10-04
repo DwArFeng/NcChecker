@@ -27,7 +27,7 @@ public final class PointVector3D implements Vector3D {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.cnc.Vector3D#getX()
+	 * @see com.dwarfeng.ncc.model.cnc.Vector3D#getX()
 	 */
 	@Override
 	public double getX() {
@@ -36,7 +36,7 @@ public final class PointVector3D implements Vector3D {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.cnc.Vector3D#getY()
+	 * @see com.dwarfeng.ncc.model.cnc.Vector3D#getY()
 	 */
 	@Override
 	public double getY() {
@@ -45,7 +45,7 @@ public final class PointVector3D implements Vector3D {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.cnc.Vector3D#getZ()
+	 * @see com.dwarfeng.ncc.model.cnc.Vector3D#getZ()
 	 */
 	@Override
 	public double getZ() {

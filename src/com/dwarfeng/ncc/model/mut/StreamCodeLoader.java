@@ -55,7 +55,7 @@ public final class StreamCodeLoader implements CodeLoader {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.io.NcCodeLoader#loadNext()
+	 * @see com.dwarfeng.ncc.model.io.NcCodeLoader#loadNext()
 	 */
 	@Override
 	public Code loadNext() throws IOException {
@@ -65,7 +65,7 @@ public final class StreamCodeLoader implements CodeLoader {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.io.NcCodeLoader#hasNext()
+	 * @see com.dwarfeng.ncc.model.io.NcCodeLoader#hasNext()
 	 */
 	@Override
 	public boolean hasNext() throws IOException {
@@ -74,7 +74,7 @@ public final class StreamCodeLoader implements CodeLoader {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.front.CodeLoader#currentValue()
+	 * @see com.dwarfeng.ncc.model.front.CodeLoader#currentValue()
 	 */
 	@Override
 	public int currentValue() {

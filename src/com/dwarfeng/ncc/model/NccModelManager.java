@@ -6,7 +6,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Objects;
 
-import com.dwarfeng.dfunc.prog.mvc.AbstractModuleManager;
+import com.dwarfeng.dfunc.prog.mvc.AbstractModelManager;
 import com.dwarfeng.ncc.model.expl.ExplCp;
 import com.dwarfeng.ncc.model.front.CodeLoader;
 import com.dwarfeng.ncc.model.front.FrontCp;
@@ -20,7 +20,7 @@ import com.dwarfeng.ncc.program.conf.FrontConfig;
  * @author DwArFeng
  * @since 1.8
  */
-public final class NccModelManager extends AbstractModuleManager<NccModelControlPort, NccProgramAttrSet>{
+public final class NccModelManager extends AbstractModelManager<NccModelControlPort, NccProgramAttrSet>{
 	
 	//-----------------------------以下是需要使用的各种字段键值------------------------------------
 	
@@ -29,34 +29,34 @@ public final class NccModelManager extends AbstractModuleManager<NccModelControl
 	
 	//------------------------------------------------------------------------------------------------
 
-	private final NccModelControlPort moduleControlPort = new NccModelControlPort() {
+	private final NccModelControlPort modelControlPort = new NccModelControlPort() {
 
 		private boolean initFlag = false;
 		
 		/*
 		 * (non-Javadoc)
-		 * @see com.dwarfeng.ncc.module.NccModuleControlPort#init()
+		 * @see com.dwarfeng.ncc.model.NccModelControlPort#init()
 		 */
 		@Override
 		public void init() {
 			if(initFlag) throw new IllegalStateException(KEY_INITED);
 			initFlag = true;
-			frontModule = new FrontModule();
+			frontModel = new FrontModel();
 		}
 
 		/*
 		 * (non-Javadoc)
-		 * @see com.dwarfeng.ncc.module.NccModuleControlPort#getFrontModuleControlPort()
+		 * @see com.dwarfeng.ncc.model.NccModelControlPort#getFrontModelControlPort()
 		 */
 		@Override
 		public FrontCp frontCp() {
 			if(!initFlag) throw new IllegalStateException(KEY_NOTINIT);
-			return frontModule.frontModuleControlPort;
+			return frontModel.frontModelControlPort;
 		}
 
 		/*
 		 * (non-Javadoc)
-		 * @see com.dwarfeng.ncc.module.NccModuleControlPort#getExplMoudleControlPort()
+		 * @see com.dwarfeng.ncc.model.NccModelControlPort#getExplMoudleControlPort()
 		 */
 		@Override
 		public ExplCp explCp() {
@@ -71,7 +71,7 @@ public final class NccModelManager extends AbstractModuleManager<NccModelControl
 		
 		/*
 		 * (non-Javadoc)
-		 * @see com.dwarfeng.ncc.module.expl.ExplControlPort#newNcCodeLoader(java.io.InputStream)
+		 * @see com.dwarfeng.ncc.model.expl.ExplControlPort#newNcCodeLoader(java.io.InputStream)
 		 */
 		@Override
 		public CodeLoader newNcCodeLoader(InputStream in) {
@@ -79,15 +79,15 @@ public final class NccModelManager extends AbstractModuleManager<NccModelControl
 		}
 	};
 	
-	private FrontModule frontModule;
+	private FrontModel frontModel;
 	
-	private class FrontModule{
+	private class FrontModel{
 		
-		private final FrontCp frontModuleControlPort = new FrontCp() {
+		private final FrontCp frontModelControlPort = new FrontCp() {
 			
 			/*
 			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#setFrontCodeSerial(com.dwarfeng.ncc.module.nc.CodeSerial)
+			 * @see com.dwarfeng.ncc.model.front.FrontModelControlPort#setFrontCodeSerial(com.dwarfeng.ncc.model.nc.CodeSerial)
 			 */
 			@Override
 			public void setFrontCodeSerial(CodeSerial codeSerial, File file, boolean isCreate) {
@@ -99,7 +99,7 @@ public final class NccModelManager extends AbstractModuleManager<NccModelControl
 			
 			/*
 			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#getFrontCodeSerial()
+			 * @see com.dwarfeng.ncc.model.front.FrontModelControlPort#getFrontCodeSerial()
 			 */
 			@Override
 			public CodeSerial getFrontCodeSerial() {
@@ -108,7 +108,7 @@ public final class NccModelManager extends AbstractModuleManager<NccModelControl
 
 			/*
 			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#applyFontConfig(com.dwarfeng.ncc.program.conf.FrontConfig)
+			 * @see com.dwarfeng.ncc.model.front.FrontModelControlPort#applyFontConfig(com.dwarfeng.ncc.program.conf.FrontConfig)
 			 */
 			@Override
 			public void applyFontConfig(FrontConfig config) {
@@ -119,7 +119,7 @@ public final class NccModelManager extends AbstractModuleManager<NccModelControl
 
 			/*
 			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#getFontConfig()
+			 * @see com.dwarfeng.ncc.model.front.FrontModelControlPort#getFontConfig()
 			 */
 			@Override
 			public FrontConfig getFontConfig() {
@@ -130,7 +130,7 @@ public final class NccModelManager extends AbstractModuleManager<NccModelControl
 
 			/*
 			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#hasFrontCode()
+			 * @see com.dwarfeng.ncc.model.front.FrontModelControlPort#hasFrontCode()
 			 */
 			@Override
 			public boolean hasFrontCode() {
@@ -139,7 +139,7 @@ public final class NccModelManager extends AbstractModuleManager<NccModelControl
 
 			/*
 			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#getCodeSerial(com.dwarfeng.ncc.module.front.Page)
+			 * @see com.dwarfeng.ncc.model.front.FrontModelControlPort#getCodeSerial(com.dwarfeng.ncc.model.front.Page)
 			 */
 			@Override
 			public CodeSerial getCodeSerial() {
@@ -149,7 +149,7 @@ public final class NccModelManager extends AbstractModuleManager<NccModelControl
 
 			/*
 			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.module.front.FrontCp#overwriteCodeSerial(com.dwarfeng.ncc.module.nc.CodeSerial)
+			 * @see com.dwarfeng.ncc.model.front.FrontCp#overwriteCodeSerial(com.dwarfeng.ncc.model.nc.CodeSerial)
 			 */
 			@Override
 			public void commitCodeSerial(CodeSerial codeSerial) {
@@ -161,7 +161,7 @@ public final class NccModelManager extends AbstractModuleManager<NccModelControl
 
 			/*
 			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.module.front.FrontCp#linkFile(java.io.File)
+			 * @see com.dwarfeng.ncc.model.front.FrontCp#linkFile(java.io.File)
 			 */
 			@Override
 			public void linkFile(File file) {
@@ -171,7 +171,7 @@ public final class NccModelManager extends AbstractModuleManager<NccModelControl
 
 			/*
 			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.module.front.FrontCp#getLinkedFile()
+			 * @see com.dwarfeng.ncc.model.front.FrontCp#getLinkedFile()
 			 */
 			@Override
 			public File getLinkedFile() {
@@ -181,7 +181,7 @@ public final class NccModelManager extends AbstractModuleManager<NccModelControl
 
 			/*
 			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.module.front.FrontCp#needSave()
+			 * @see com.dwarfeng.ncc.model.front.FrontCp#needSave()
 			 */
 			@Override
 			public boolean needSave() {
@@ -205,7 +205,7 @@ public final class NccModelManager extends AbstractModuleManager<NccModelControl
 		private boolean saveFlag;
 		
 		
-		public FrontModule() {
+		public FrontModel() {
 			rollback = new ArrayDeque<CodeSerial>();
 			saveFlag = false;
 		}
@@ -226,11 +226,11 @@ public final class NccModelManager extends AbstractModuleManager<NccModelControl
 	
 	/*
 	 * (non-Javadoc)
-	 * @see com.dwarfeng.dfunc.prog.mvc.AbstractModuleManager#getModuleControlPort()
+	 * @see com.dwarfeng.dfunc.prog.mvc.AbstractModelManager#getModelControlPort()
 	 */
 	@Override
-	public NccModelControlPort getModuleControlPort() {
-		return moduleControlPort;
+	public NccModelControlPort getModelControlPort() {
+		return modelControlPort;
 	}
 
 }

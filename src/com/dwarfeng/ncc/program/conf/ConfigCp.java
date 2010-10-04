@@ -31,7 +31,7 @@ public interface ConfigCp {
 	 * @throws IOException IO异常。
 	 * @throws NullPointerException 入口参数为 <code>null</code>。
 	 */
-	public void saveFrontModuleConfig(FrontConfig config) throws IOException;
+	public void saveFrontModelConfig(FrontConfig config) throws IOException;
 	
 	/**
 	 * 获取配置文件的前端配置。
@@ -39,6 +39,6 @@ public interface ConfigCp {
 	 * @throws IOException IO异常。
 	 * @throws NumberFormatException 数字格式异常：在配置文件被外部更改破坏时可能会抛出。
 	 */
-	public FrontConfig loadFrontModuleConfig()throws IOException, NumberFormatException;
+	public FrontConfig loadFrontModelConfig()throws IOException, NumberFormatException;
 
 }

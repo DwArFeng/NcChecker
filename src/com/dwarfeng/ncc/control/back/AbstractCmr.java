@@ -17,7 +17,7 @@ abstract class AbstractCmr implements Runnable{
 	
 	protected final NccControlManager cm;
 	protected final NccViewControlPort viewControlPort;
-	protected final NccModelControlPort moduleControlPort;
+	protected final NccModelControlPort modelControlPort;
 	protected final NccProgramControlPort programControlPort;
 	protected final NccProgramAttrSet programAttrSet;
 
@@ -30,7 +30,7 @@ abstract class AbstractCmr implements Runnable{
 		Objects.requireNonNull(controlManager);
 		this.cm = controlManager;
 		this.viewControlPort = cm.getViewControlPort();
-		this.moduleControlPort = cm.getModuleControlPort();
+		this.modelControlPort = cm.getModelControlPort();
 		this.programAttrSet = cm.getProgramAttrSet();
 		this.programControlPort = cm.getProgramControlPort();
 	}

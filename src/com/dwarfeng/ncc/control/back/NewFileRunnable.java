@@ -49,10 +49,10 @@ public class NewFileRunnable extends AbstractCmr {
 			timer.stop();
 			
 			//向前端模型中增加这个代码序列
-			moduleControlPort.frontCp().setFrontCodeSerial(codeSerial, null, true);
+			modelControlPort.frontCp().setFrontCodeSerial(codeSerial, null, true);
 			
 			//在视图中渲染代码
-			viewControlPort.frameCp().showCode(moduleControlPort.frontCp().getCodeSerial());
+			viewControlPort.frameCp().showCode(modelControlPort.frontCp().getCodeSerial());
 			viewControlPort.frameCp().noneFileMode(false);
 			
 			//生成统计报告

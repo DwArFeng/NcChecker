@@ -23,6 +23,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -32,6 +33,7 @@ import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
@@ -144,6 +146,26 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 					return fc.getSelectedFile();
 			}
 		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.view.gui.NotifyCp#showConfirm(java.lang.Object, java.lang.String, com.dwarfeng.ncc.view.gui.NotifyCp.OptionType, com.dwarfeng.ncc.view.gui.NotifyCp.MessageType, javax.swing.Icon)
+		 */
+		@Override
+		public AnswerType showConfirm(Object message, String title,
+				OptionType optionType, MessageType messageType, Icon icon) {
+			int i = JOptionPane.showConfirmDialog(
+					mainFrame, message, title, optionType.getVal(), messageType.getVal(), icon);
+			
+			switch (i) {
+				case JOptionPane.YES_OPTION:
+					return AnswerType.YES;
+				case JOptionPane.NO_OPTION:
+					return AnswerType.NO;
+				default:
+					return AnswerType.CANCEL;
+				}
+		}
 	};
 	
 	
@@ -244,7 +266,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 
 			/*
 			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.view.gui.NccFrameControlPort#showCode(com.dwarfeng.ncc.module.nc.CodeSerial)
+			 * @see com.dwarfeng.ncc.view.gui.NccFrameControlPort#showCode(com.dwarfeng.ncc.model.nc.CodeSerial)
 			 */
 			@Override
 			public void showCode(CodeSerial codeSerial) {
@@ -327,11 +349,13 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 						codePanel.remove(codeCenter1);
 						codePanel.add(codeCenter2, BorderLayout.CENTER);
 						codePanel.repaint();
+						codeToolBar.setMode(mode);
 						break;
 					case INSPECT:
 						codePanel.remove(codeCenter2);
 						codePanel.add(codeCenter1, BorderLayout.CENTER);
 						codePanel.repaint();
+						codeToolBar.setMode(mode);
 						break;
 				}
 			}
@@ -801,6 +825,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				try{
 					textArea.setText(text);
 					undoManager.discardAllEdits();
+					editFlag = false;
 					revalidate();
 				}finally{
 					changeFlag = false;
@@ -826,17 +851,21 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			private boolean lockEditMask = false;
 			private boolean noneFileMask = false;
 			
+			private boolean modiFlag;
+			
 			private ButtonModel currentButtonModel;
 			
 			public CodeToolBar() {
+				modiFlag = false;
+				
 				setFloatable(false);
 				setBorder(new BevelBorder(BevelBorder.LOWERED));
 				setOrientation(JToolBar.VERTICAL);
 				
 				final ActionListener actionListener = new ActionListener() {
-					
 					@Override
 					public void actionPerformed(ActionEvent e) {
+						if(modiFlag) return;
 						checkButtonGroup();
 					}
 				};
@@ -887,6 +916,27 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			public void noneFile(boolean aFlag){
 				noneFileMask = aFlag;
 				refresh();
+			}
+			
+			public void setMode(Mode mode){
+				modiFlag = true;
+				try{
+					buttonGroup.clearSelection();
+					switch (mode) {
+						case EDIT:
+							buttonGroup.setSelected(codeEdit.getModel(), true);
+							currentButtonModel = codeEdit.getModel();
+							break;
+						case INSPECT:
+							buttonGroup.setSelected(codeFunction.getModel(), true);
+							currentButtonModel = codeFunction.getModel();
+							break;
+						default:
+							break;
+					}
+				}finally{
+					modiFlag = false;
+				}
 			}
 			
 			private void refresh(){
@@ -973,7 +1023,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				@Override
 				protected void threadStartMethod() {}
 				
-				private void setProgressModule(ProgressModel model){
+				private void setProgressModel(ProgressModel model){
 					lock.lock();
 					try{
 						this.model = model;
@@ -1029,7 +1079,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			
 			public void setProgressModel(ProgressModel model){
 				enableFlag = true;
-				monitor.setProgressModule(model);
+				monitor.setProgressModel(model);
 				refresh();
 			}
 			

@@ -204,20 +204,20 @@ public final class NccProgramManager extends AbstractProgramManager<NccProgramCo
 
 		/*
 		 * (non-Javadoc)
-		 * @see com.dwarfeng.ncc.program.conf.ConfigControlPort#saveFrontModuleConfig(com.dwarfeng.ncc.program.conf.FrontModuleConfig)
+		 * @see com.dwarfeng.ncc.program.conf.ConfigControlPort#saveFrontModelConfig(com.dwarfeng.ncc.program.conf.FrontModelConfig)
 		 */
 		@Override
-		public void saveFrontModuleConfig(FrontConfig config)throws IOException {
+		public void saveFrontModelConfig(FrontConfig config)throws IOException {
 			// TODO Auto-generated method stub
 			
 		}
 
 		/*
 		 * (non-Javadoc)
-		 * @see com.dwarfeng.ncc.program.conf.ConfigControlPort#loadFrontModuleConfig()
+		 * @see com.dwarfeng.ncc.program.conf.ConfigControlPort#loadFrontModelConfig()
 		 */
 		@Override
-		public FrontConfig loadFrontModuleConfig() throws IOException, NumberFormatException {
+		public FrontConfig loadFrontModelConfig() throws IOException, NumberFormatException {
 			// TODO Auto-generated method stub
 			return null;
 		}
