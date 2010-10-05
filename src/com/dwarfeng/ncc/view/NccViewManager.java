@@ -3,6 +3,7 @@ package com.dwarfeng.ncc.view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -14,7 +15,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Formatter;
 import java.util.Objects;
 import java.util.concurrent.locks.Condition;
@@ -56,7 +59,7 @@ import com.dwarfeng.dfunc.io.CT;
 import com.dwarfeng.dfunc.prog.mvc.AbstractViewManager;
 import com.dwarfeng.dfunc.threads.InnerThread;
 import com.dwarfeng.ncc.control.NccControlPort;
-import com.dwarfeng.ncc.control.cps.CodeCp.CodeEidtMode;
+import com.dwarfeng.ncc.control.cps.CodeCp.CodeEditMode;
 import com.dwarfeng.ncc.model.nc.Code;
 import com.dwarfeng.ncc.model.nc.CodeSerial;
 import com.dwarfeng.ncc.program.NccProgramAttrSet;
@@ -293,12 +296,17 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 */
 			@Override
 			public void showCode(CodeSerial codeSerial) {
-				codeCenter1.codeLabelModel.clear();
-				codeCenter1.codeModel.clear();
-				if(Objects.nonNull(codeSerial)){
-					codeCenter1.codeLabelModel.addAll(Arrays.asList(codeSerial.toArray()));
-					codeCenter1.codeModel.addAll(Arrays.asList(codeSerial.toArray()));
-				}
+				EventQueue.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						codeCenter1.codeLabelModel.clear();
+						codeCenter1.codeModel.clear();
+						if(Objects.nonNull(codeSerial)){
+							codeCenter1.codeLabelModel.addAll(Arrays.asList(codeSerial.toArray()));
+							codeCenter1.codeModel.addAll(Arrays.asList(codeSerial.toArray()));
+						}
+					}
+				});
 			}
 
 			/*
@@ -366,7 +374,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 * @see com.dwarfeng.ncc.view.gui.FrameCp#toggleMode(com.dwarfeng.ncc.control.NccControlPort.CodePanelMode)
 			 */
 			@Override
-			public void knockForMode(CodeEidtMode mode) {
+			public void knockForMode(CodeEditMode mode) {
 				codeToolBar.setMode(mode);
 				switch(mode){
 					case EDIT:
@@ -572,7 +580,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 						.listener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								controlPort.fileCp().openNcFile(null);
+								controlPort.fileCp().openNcFile();
 							}
 						})
 						.build()
@@ -970,7 +978,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				refresh();
 			}
 			
-			public void setMode(CodeEidtMode mode){
+			public void setMode(CodeEditMode mode){
 				modiFlag = true;
 				try{
 					buttonGroup.clearSelection();
@@ -999,8 +1007,8 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			private void checkButtonGroup(){
 				if(buttonGroup.getSelection() == currentButtonModel) return;
 				currentButtonModel = buttonGroup.getSelection();
-				if(codeEdit.isSelected()) controlPort.codeCp().attemptToggleMode(CodeEidtMode.EDIT);
-				if(codeFunction.isSelected()) controlPort.codeCp().attemptToggleMode(CodeEidtMode.INSPECT);
+				if(codeEdit.isSelected()) controlPort.codeCp().attemptToggleMode(CodeEditMode.EDIT);
+				if(codeFunction.isSelected()) controlPort.codeCp().attemptToggleMode(CodeEditMode.INSPECT);
 			}
 			
 		}

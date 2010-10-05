@@ -12,7 +12,7 @@ public interface CodeCp {
 	 * @author DwArFeng
 	 * @since 1.8
 	 */
-	public enum CodeEidtMode{
+	public enum CodeEditMode{
 		/**查看模式*/
 		INSPECT,
 		/**编辑模式*/
@@ -24,7 +24,7 @@ public interface CodeCp {
 	 * @param mode 指定的模式。
 	 * @throws NullPointerException 入口参数为 <code>null</code>。
 	 */
-	public void attemptToggleMode(CodeEidtMode mode);
+	public void attemptToggleMode(CodeEditMode mode);
 	
 	
 }
