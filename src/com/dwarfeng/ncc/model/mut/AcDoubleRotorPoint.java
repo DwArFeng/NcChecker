@@ -101,7 +101,7 @@ public final class AcDoubleRotorPoint implements ToolPoint{
 	 */
 	@Override
 	public String toString(){
-		return "X" + x + " Y" + y + " Z" + z + " A" + a + " C" + c;
+		return "X" + x + ", Y" + y + ", Z" + z + ", A" + a + ", C" + c;
 	}
 
 }

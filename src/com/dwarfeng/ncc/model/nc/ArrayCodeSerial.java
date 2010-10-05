@@ -52,9 +52,9 @@ public final class ArrayCodeSerial implements CodeSerial {
 		StringBuilder sb = new StringBuilder();
 		sb	.append("ArrayNcCode [totleLine = ")
 			.append(getTotle())
-			.append(" minLine = ")
+			.append(", minLine = ")
 			.append(getMaxLineNumber())
-			.append(" maxLine = ")
+			.append(", maxLine = ")
 			.append(getMaxLineNumber())
 			.append("]");
 		return sb.toString();

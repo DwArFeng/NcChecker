@@ -58,7 +58,7 @@ public final class PointVector3D implements Vector3D {
 	 */
 	@Override
 	public String toString(){
-		return "X" + getX() + " Y" + getY() + " Z" + getZ();
+		return "X" + getX() + ", Y" + getY() + ", Z" + getZ();
 	}
 	
 	/*

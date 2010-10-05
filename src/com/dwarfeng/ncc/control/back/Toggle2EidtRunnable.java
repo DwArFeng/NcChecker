@@ -6,7 +6,7 @@ import com.dwarfeng.dfunc.dt.CodeTimer;
 import com.dwarfeng.dfunc.io.StringOutputStream;
 import com.dwarfeng.dfunc.num.UnitTrans.Time;
 import com.dwarfeng.ncc.control.NccControlManager;
-import com.dwarfeng.ncc.control.NccControlPort.Mode;
+import com.dwarfeng.ncc.control.NccControlPort.CodeEidtMode;
 import com.dwarfeng.ncc.model.front.CodePrinter;
 import com.dwarfeng.ncc.model.mut.StreamCodePrinter;
 import com.dwarfeng.ncc.model.nc.CodeSerial;
@@ -85,7 +85,7 @@ public class Toggle2EidtRunnable extends AbstractCmr{
 				//如果手动停止，则终止进程。
 				if(progressModel.isSuspend()){
 					viewControlPort.frameCp().traceInConsole(programAttrSet.getStringField(KEY_SUSPEND));
-					viewControlPort.frameCp().knockForMode(Mode.INSPECT);
+					viewControlPort.frameCp().knockForMode(CodeEidtMode.INSPECT);
 					return;
 				}
 				
@@ -104,7 +104,7 @@ public class Toggle2EidtRunnable extends AbstractCmr{
 			String text = out.toString();
 			
 			//视图转换为编辑模式
-			viewControlPort.frameCp().knockForMode(Mode.EDIT);
+			viewControlPort.frameCp().knockForMode(CodeEidtMode.EDIT);
 			//渲染文本
 			viewControlPort.frameCp().setEditText(text);
 			//生成报告

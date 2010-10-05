@@ -1,7 +1,10 @@
 package com.dwarfeng.ncc.control;
 
 import java.io.File;
+
 import com.dwarfeng.dfunc.prog.mvc.ControlPort;
+import com.dwarfeng.ncc.control.cps.CodeCp;
+import com.dwarfeng.ncc.control.cps.FileCp;
 
 /**
  * 数控代码验证程序中的控制端口。
@@ -17,64 +20,10 @@ public interface NccControlPort extends ControlPort {
 	public void exitProgram();
 	
 	/**
-	 * 通知程序管理器需要打开某个NC文件。
-	 * @throws IllegalStateException 程序未启动时调用此方法。
-	 */
-	public void openNcFile();
-	
-	/**
-	 * 打开指定的NC文件。
-	 * @param file 指定的文件。
-	 * @throws IllegalStateException 程序未启动时调用此方法。
-	 * @throws NullPointerException 入口参数为 <code>null</code>。
-	 */
-	public void openNcFile(File file);
-	
-	/**
 	 * 启动程序。
 	 * @throws IllegalStateException 当程序已经启动，还未关闭时重复调用此方法。
 	 */
 	public void startProgram();
-	
-	/**
-	 * 关闭前端的程序。
-	 * @throws IllegalStateException 程序未启动时调用此方法。
-	 * @throws NullPointerException 前端的文件并不存在。
-	 */
-	public void closeFrontFile();
-	
-	/**
-	 * 保存前端的程序。
-	 * @throws IllegalStateException 程序未启动时调用此方法。
-	 * @throws NullPointerException 前端文件并不存在。
-	 */
-	public void saveFrontFile();
-	
-	/**
-	 * 新建一个前端的文件。
-	 * @throws IllegalStateException 程序未启动时调用此方法。
-	 */
-	public void newFrontFile();
-	
-	/**
-	 * 程序中的几种模式（针对代码面板）
-	 * @author DwArFeng
-	 * @since 1.8
-	 */
-	public enum Mode{
-		/**查看模式*/
-		INSPECT,
-		/**编辑模式*/
-		EDIT,
-	}
-	
-	/**
-	 * 切换代码面板的模式
-	 * @param mode 代码面板的模式。
-	 * @throws IllegalStateException 程序未启动时调用此方法。
-	 * @throws NullPointerException 入口参数为 <code>null</code>。
-	 */
-	public void toggleMode(Mode mode);
 	
 	/**
 	 * 提交指定文本的代码。
@@ -90,5 +39,19 @@ public interface NccControlPort extends ControlPort {
 //	 * @throws NullPointerException 入口参数为 <code>null</code>。
 //	 */
 //	public void printCodeSerial(CodeSerial codeSerial, OutputStream out);
+	
+	/**
+	 * 获取文件控制站。
+	 * @return 文件控制站。
+	 * @throws IllegalStateException 程序未启动时调用此方法。
+	 */
+	public FileCp fileCp();
+	
+	/**
+	 * 获取代码控制站。
+	 * @return 代码控制站。
+	 * @throws IllegalStateException 程序未启动时调用此方法。
+	 */
+	public CodeCp codeCp();
 	
 }
