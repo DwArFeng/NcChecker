@@ -67,6 +67,7 @@ public final class PointVector3D implements Vector3D {
 	 */
 	@Override
 	public boolean equals(Object obj) {
+		if(obj == this) return true;
 		if(obj == null) return false;
 		if(!(obj instanceof PointVector3D)) return false;
 		PointVector3D source = (PointVector3D) obj;

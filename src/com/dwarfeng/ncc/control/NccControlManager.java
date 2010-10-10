@@ -84,6 +84,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 		 */
 		@Override
 		public boolean equals(Object obj) {
+			if(obj == this) return true;
 			if(obj == null) return false;
 			if(!(obj instanceof SaveCheckResult)) return false;
 			SaveCheckResult r = (SaveCheckResult) obj;

@@ -77,6 +77,7 @@ public final class AcDoubleRotorPoint implements ToolPoint{
 	 */
 	@Override
 	public boolean equals(Object obj) {
+		if(obj == this) return true;
 		if(obj == null) return false;
 		if(!(obj instanceof AcDoubleRotorPoint)) return false;
 		AcDoubleRotorPoint source = (AcDoubleRotorPoint) obj;
