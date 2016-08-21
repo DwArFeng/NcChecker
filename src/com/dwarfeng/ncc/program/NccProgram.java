@@ -17,6 +17,8 @@ import com.dwarfeng.ncc.view.NccViewManager;
  */
 public final class NccProgram extends MvcProgram<NccProgramControlPort, NccModuleControlPort, 
 NccViewControlPort, NccControlPort, NccProgramAttrSet> {
+	
+	
 
 	public NccProgram() {
 		super(new NccModuleManager(), new NccViewManager(), new NccControlManager(), new NccProgramManager());
