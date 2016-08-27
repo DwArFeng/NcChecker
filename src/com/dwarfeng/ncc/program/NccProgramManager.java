@@ -12,10 +12,8 @@ import com.dwarfeng.dfunc.prog.mvc.AbstractProgramManager;
  */
 public final class NccProgramManager extends AbstractProgramManager<NccProgramControlPort, NccProgramAttrSet> {
 
-	private static final String exceptionSfPath = "resource/lang/stringField";
-	private static ResourceBundle stringField = 
-			ResourceBundle.getBundle(exceptionSfPath,Locale.getDefault(),NccProgramManager.class.getClassLoader());
-
+	private static final String stringFieldPath = "resource/lang/stringField";
+	private static final String exceptionFieldPath = "resource/lang/stringField";
 	
 	private final NccProgramControlPort programControlPort = new NccProgramControlPort() {
 		
@@ -23,6 +21,12 @@ public final class NccProgramManager extends AbstractProgramManager<NccProgramCo
 	};
 	
 	private final NccProgramAttrSet programAttrSet = new NccProgramAttrSet() {
+		
+		private ResourceBundle stringField = 
+				ResourceBundle.getBundle(stringFieldPath,Locale.getDefault(),NccProgramManager.class.getClassLoader());
+		
+		private ResourceBundle exceptionField = 
+				ResourceBundle.getBundle(exceptionFieldPath,Locale.getDefault(),NccProgramManager.class.getClassLoader());
 		
 		/*
 		 * (non-Javadoc)
@@ -32,7 +36,15 @@ public final class NccProgramManager extends AbstractProgramManager<NccProgramCo
 		public String getStringField(StringFieldKeys key) {
 			return stringField.getString(key.toString());
 		}
-		
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.program.NccProgramAttrSet#getExceptionField(com.dwarfeng.ncc.program.ExceptionFieldKeys)
+		 */
+		@Override
+		public String getExceptionField(ExceptionFieldKeys key) {
+			return exceptionField.getString(key.toString());
+		}
 		
 	};
 	

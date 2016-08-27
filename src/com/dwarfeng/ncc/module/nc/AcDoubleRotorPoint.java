@@ -4,9 +4,6 @@ import com.dwarfeng.dfunc.num.UnitTrans;
 import com.dwarfeng.dfunc.num.UnitTrans.ANGLE;
 import com.dwarfeng.ncc.module.NccModuleManager;
 import com.dwarfeng.ncc.module.NccModuleObject;
-import com.dwarfeng.ncc.module.geom.DefaultVector3D;
-import com.dwarfeng.ncc.module.geom.DirectionPoint;
-import com.dwarfeng.ncc.module.geom.Vector3D;
 
 /**
  * 通过XYZ与AC轴来构造点位的AC双转头五轴点点。

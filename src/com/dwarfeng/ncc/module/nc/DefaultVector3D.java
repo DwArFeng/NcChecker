@@ -1,4 +1,4 @@
-package com.dwarfeng.ncc.module.geom;
+package com.dwarfeng.ncc.module.nc;
 
 import com.dwarfeng.ncc.module.NccModuleManager;
 import com.dwarfeng.ncc.module.NccModuleObject;

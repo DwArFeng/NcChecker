@@ -15,5 +15,12 @@ public interface NccProgramAttrSet extends ProgramAttrSet {
 	 * @return 对应的字段。
 	 */
 	public String getStringField(StringFieldKeys key);
+	
+	/**
+	 * 获得程序中对应键值的异常字段。
+	 * @param key 指定的键值。
+	 * @return 对应的异常字段。
+	 */
+	public String getExceptionField(ExceptionFieldKeys key);
 
 }
