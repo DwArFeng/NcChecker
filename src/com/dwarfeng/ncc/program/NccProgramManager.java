@@ -14,8 +14,8 @@ import com.dwarfeng.ncc.program.key.StringFieldKeys;
  */
 public final class NccProgramManager extends AbstractProgramManager<NccProgramControlPort, NccProgramAttrSet> {
 
-	private static final String stringFieldPath = "resource/lang/stringField";
-	private static final String exceptionFieldPath = "resource/lang/stringField";
+	private static final String stringFieldPath = "resource/lang/StringField";
+	private static final String exceptionFieldPath = "resource/lang/ExceptionField";
 	
 	private final NccProgramControlPort programControlPort = new NccProgramControlPort() {
 		
