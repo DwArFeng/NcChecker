@@ -13,8 +13,35 @@ import com.dwarfeng.ncc.view.NccViewControlPort;
  */
 public final class NccControlManager extends AbstractControlManager<NccProgramControlPort, NccModuleControlPort,
 NccViewControlPort, NccControlPort, NccProgramAttrSet> {
+	
+	
 
 	private NccControlPort controlPort = new NccControlPort() {
+		
+		private boolean startFlag = false;
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.control.NccControlPort#startProgram()
+		 */
+		@Override
+		public void startProgram() {
+			//TODO 改成StringField
+			if(startFlag) throw new IllegalStateException("程序已经启动了");
+			startFlag = true;
+			viewControlPort.init();
+			moduleControlPort.init();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.control.NccControlPort#setMainFrameVisible(boolean)
+		 */
+		@Override
+		public void setMainFrameVisible(boolean aFlag) {
+			if(!startFlag) throw new IllegalStateException("程序还未启动");
+			viewControlPort.setMainFrameVisible(aFlag);
+		}
 		
 		
 	};

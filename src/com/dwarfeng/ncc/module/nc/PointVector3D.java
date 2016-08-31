@@ -1,16 +1,16 @@
 package com.dwarfeng.ncc.module.nc;
 
 import com.dwarfeng.ncc.module.NccModuleManager;
-import com.dwarfeng.ncc.module.NccModuleObject;
+import com.dwarfeng.ncc.module.AbstractNccModuleObject;
 
 
 
 /**
- * {@link Vector3D}的默认实现。
+ * 利用从零点到指定点实现的{@link Vector3D}。
  * @author DwArFeng
  * @since 1.8
  */
-public final class DefaultVector3D extends NccModuleObject implements Vector3D {
+public final class PointVector3D extends AbstractNccModuleObject implements Vector3D {
 	
 	private double x,y,z;
 	
@@ -19,7 +19,7 @@ public final class DefaultVector3D extends NccModuleObject implements Vector3D {
 	 * @param moduleManager 指定的模型管理器。
 	 * @throws NullPointerException <code>moduleManager</code>为 <code>null</code>是抛出此异常。
 	 */
-	public DefaultVector3D(NccModuleManager moduleManager) {
+	public PointVector3D(NccModuleManager moduleManager) {
 		this(moduleManager,0,0,0);
 	}
 	
@@ -31,7 +31,7 @@ public final class DefaultVector3D extends NccModuleObject implements Vector3D {
 	 * @param z 指定的z坐标。
 	 * @throws NullPointerException <code>moduleManager</code>为<code>null</code>时抛出此异常。
 	 */
-	public DefaultVector3D(NccModuleManager moduleManager,double x, double y, double z) {
+	public PointVector3D(NccModuleManager moduleManager,double x, double y, double z) {
 		super(moduleManager);
 		this.x = x ;
 		this.y = y;
@@ -81,8 +81,8 @@ public final class DefaultVector3D extends NccModuleObject implements Vector3D {
 	@Override
 	public boolean equals(Object obj) {
 		if(obj == null) return false;
-		if(!(obj instanceof DefaultVector3D)) return false;
-		DefaultVector3D source = (DefaultVector3D) obj;
+		if(!(obj instanceof PointVector3D)) return false;
+		PointVector3D source = (PointVector3D) obj;
 		return
 				source.getX() == getX() &&
 				source.getY() == getY() &&

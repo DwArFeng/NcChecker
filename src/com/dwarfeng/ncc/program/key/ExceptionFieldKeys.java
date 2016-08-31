@@ -1,4 +1,4 @@
-package com.dwarfeng.ncc.program;
+package com.dwarfeng.ncc.program.key;
 
 /**
  * 程序异常字段的键值枚举。

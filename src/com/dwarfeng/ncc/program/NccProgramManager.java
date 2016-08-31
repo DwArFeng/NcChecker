@@ -4,6 +4,8 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import com.dwarfeng.dfunc.prog.mvc.AbstractProgramManager;
+import com.dwarfeng.ncc.program.key.ExceptionFieldKeys;
+import com.dwarfeng.ncc.program.key.StringFieldKeys;
 
 /**
  * 数控代码验证程序管理器，可以提供程序属性集合和程序控制端口。

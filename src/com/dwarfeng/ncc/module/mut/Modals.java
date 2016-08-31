@@ -1,4 +1,4 @@
-package com.dwarfeng.ncc.module.nc;
+package com.dwarfeng.ncc.module.mut;
 
 /**
  * 模态量类集合。

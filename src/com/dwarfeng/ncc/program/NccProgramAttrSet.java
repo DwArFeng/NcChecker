@@ -1,6 +1,8 @@
 package com.dwarfeng.ncc.program;
 
 import com.dwarfeng.dfunc.prog.mvc.ProgramAttrSet;
+import com.dwarfeng.ncc.program.key.ExceptionFieldKeys;
+import com.dwarfeng.ncc.program.key.StringFieldKeys;
 
 /**
  * 数控代码验证程序中的程序属性集合。

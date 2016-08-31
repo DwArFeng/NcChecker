@@ -1,16 +1,19 @@
-package com.dwarfeng.ncc.module.nc;
+package com.dwarfeng.ncc.module.mut;
 
 import com.dwarfeng.dfunc.num.UnitTrans;
 import com.dwarfeng.dfunc.num.UnitTrans.ANGLE;
 import com.dwarfeng.ncc.module.NccModuleManager;
-import com.dwarfeng.ncc.module.NccModuleObject;
+import com.dwarfeng.ncc.module.AbstractNccModuleObject;
+import com.dwarfeng.ncc.module.nc.PointVector3D;
+import com.dwarfeng.ncc.module.nc.ToolPoint;
+import com.dwarfeng.ncc.module.nc.Vector3D;
 
 /**
  * 通过XYZ与AC轴来构造点位的AC双转头五轴点点。
  * @author DwArFeng
  * @since 1.8
  */
-public final class AcDoubleRotorPoint extends NccModuleObject implements DirectionPoint{
+public final class AcDoubleRotorPoint extends AbstractNccModuleObject implements ToolPoint{
 	
 	private final double x,y,z,a,c;
 	
@@ -64,7 +67,7 @@ public final class AcDoubleRotorPoint extends NccModuleObject implements Directi
 	 */
 	@Override
 	public Vector3D getPosition() {
-		return new DefaultVector3D(moduleManager,x, y, z);
+		return new PointVector3D(moduleManager,x, y, z);
 	}
 
 	/*
@@ -73,7 +76,7 @@ public final class AcDoubleRotorPoint extends NccModuleObject implements Directi
 	 */
 	@Override
 	public Vector3D getDirection() {
-		return new DefaultVector3D(
+		return new PointVector3D(
 				moduleManager,
 				Math.sin(UnitTrans.trans(a, ANGLE.DEG, ANGLE.RAD).doubleValue())
 				* Math.sin(UnitTrans.trans(c, ANGLE.DEG, ANGLE.RAD).doubleValue()), 
