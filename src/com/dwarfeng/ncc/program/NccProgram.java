@@ -24,7 +24,6 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		NccProgram program = new NccProgram();
 		program.controlManager.getControlPort().startProgram();
-		program.controlManager.getControlPort().setMainFrameVisible(true);
 	}
 
 	/**

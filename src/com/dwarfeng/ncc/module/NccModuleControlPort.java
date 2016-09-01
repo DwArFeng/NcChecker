@@ -3,7 +3,7 @@ package com.dwarfeng.ncc.module;
 import java.io.InputStream;
 
 import com.dwarfeng.dfunc.prog.mvc.ModuleControlPort;
-import com.dwarfeng.ncc.module.io.CodeLoader;
+import com.dwarfeng.ncc.module.expl.CodeLoader;
 
 /**
  * 数控代码验证程序中的模型控制端口。

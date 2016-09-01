@@ -2,7 +2,6 @@ package com.dwarfeng.ncc.module.expl;
 
 import com.dwarfeng.ncc.module.nc.Modal;
 import com.dwarfeng.ncc.module.nc.ToolPoint;
-import com.dwarfeng.ncc.module.nc.Step;
 
 /**
  * NC´úÂë½âÊÍÆ÷¡£

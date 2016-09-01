@@ -3,8 +3,8 @@ package com.dwarfeng.ncc.module;
 import java.io.InputStream;
 
 import com.dwarfeng.dfunc.prog.mvc.AbstractModuleManager;
-import com.dwarfeng.ncc.module.io.CodeLoader;
-import com.dwarfeng.ncc.module.io.ScannerCodeLoader;
+import com.dwarfeng.ncc.module.expl.CodeLoader;
+import com.dwarfeng.ncc.module.expl.ScannerCodeLoader;
 import com.dwarfeng.ncc.program.NccProgramAttrSet;
 
 /**
@@ -13,6 +13,8 @@ import com.dwarfeng.ncc.program.NccProgramAttrSet;
  * @since 1.8
  */
 public final class NccModuleManager extends AbstractModuleManager<NccModuleControlPort, NccProgramAttrSet>{
+	
+	
 
 	private final NccModuleControlPort moduleControlPort = new NccModuleControlPort() {
 

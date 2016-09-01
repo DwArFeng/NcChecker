@@ -1,6 +1,8 @@
 package com.dwarfeng.ncc.view;
 
 import com.dwarfeng.dfunc.prog.mvc.ViewControlPort;
+import com.dwarfeng.ncc.program.conf.MainFrameAppearConfig;
+import com.dwarfeng.ncc.view.gui.NccFrameControlPort;
 
 /**
  * 数控代码验证程序的视图控制端口。
@@ -16,10 +18,10 @@ public interface NccViewControlPort extends ViewControlPort {
 	public void init();
 	
 	/**
-	 * 设置主界面是否可见。
-	 * @param aFlag 主界面是否可见。
-	 * @throws IllegalStateException 当管理器还没有初始化的时候抛出异常。
+	 * 返回程序框架的控制站。
+	 * @return 程序框架控制站。
+	 * @throws IllegalStateException 管理器还没有初始化的时候抛出异常。
 	 */
-	public void setMainFrameVisible(boolean aFlag);
+	public NccFrameControlPort getMainFrameControlPort();
 
 }

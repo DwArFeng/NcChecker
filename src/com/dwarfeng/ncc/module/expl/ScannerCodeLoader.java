@@ -1,17 +1,13 @@
-package com.dwarfeng.ncc.module.io;
+package com.dwarfeng.ncc.module.expl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 
 import com.dwarfeng.ncc.module.AbstractNccModuleObject;
 import com.dwarfeng.ncc.module.NccModuleManager;
-import com.dwarfeng.ncc.module.nc.ArrayCodeList;
 import com.dwarfeng.ncc.module.nc.Code;
-import com.dwarfeng.ncc.module.nc.CodeList;
 
 /**
  * 利用 {@link Scanner} 来实现的数控代码读取器。

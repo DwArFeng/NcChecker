@@ -1,8 +1,8 @@
 package com.dwarfeng.ncc.program;
 
 import com.dwarfeng.dfunc.prog.mvc.ProgramAttrSet;
-import com.dwarfeng.ncc.program.key.ExceptionFieldKeys;
-import com.dwarfeng.ncc.program.key.StringFieldKeys;
+import com.dwarfeng.ncc.program.key.ExceptionFieldKey;
+import com.dwarfeng.ncc.program.key.StringFieldKey;
 
 /**
  * 数控代码验证程序中的程序属性集合。
@@ -16,13 +16,13 @@ public interface NccProgramAttrSet extends ProgramAttrSet {
 	 * @param key 指定的键值。
 	 * @return 对应的字段。
 	 */
-	public String getStringField(StringFieldKeys key);
+	public String getStringField(StringFieldKey key);
 	
 	/**
 	 * 获得程序中对应键值的异常字段。
 	 * @param key 指定的键值。
 	 * @return 对应的异常字段。
 	 */
-	public String getExceptionField(ExceptionFieldKeys key);
-
+	public String getExceptionField(ExceptionFieldKey key);
+	
 }
