@@ -7,7 +7,24 @@ package com.dwarfeng.ncc.program.key;
  */
 public enum StringFieldKey {
 
+	/**文本文件字段*/
+	CTRL_TEXTFILE,
+	/**NC文件字段*/
+	CTRL_NCFILE,
+	
 	/**程序主界面的标题字段*/
-	MAINFRAME_TITLE;
+	MAINFRAME_TITLE,
+	/**程序主界面没有任务的标题字段*/
+	MAINFRAME_NOMISSION,
+	
+	/**文件菜单*/
+	MENU_FILE,
+	/**编辑菜单*/
+	MENU_EDIT,
+	
+	/**打开文本*/
+	MENU_FILE_OPENFILE,
+	/**打开文本的描述*/
+	MENU_FILE_OPENFILE_DES,
 	
 }

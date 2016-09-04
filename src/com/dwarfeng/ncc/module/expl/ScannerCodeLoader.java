@@ -8,6 +8,7 @@ import java.util.Scanner;
 import com.dwarfeng.ncc.module.AbstractNccModuleObject;
 import com.dwarfeng.ncc.module.NccModuleManager;
 import com.dwarfeng.ncc.module.nc.Code;
+import com.dwarfeng.ncc.module.nc.StringCode;
 
 /**
  * 利用 {@link Scanner} 来实现的数控代码读取器。
@@ -58,9 +59,7 @@ public final class ScannerCodeLoader extends AbstractNccModuleObject implements 
 	 */
 	@Override
 	public Code loadNext() throws IOException {
-		
-		//TODO 补充方法
-		return null;
+		return new StringCode(moduleManager, scanner.nextLine());
 	}
 
 	/*

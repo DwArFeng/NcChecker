@@ -9,7 +9,7 @@ import com.dwarfeng.ncc.module.expl.ExplState;
  * @author DwArFeng
  * @since 1.8
  */
-public interface CodeList extends NccModuleObject{
+public interface CodeList extends NccModuleObject, Iterable<Code>{
 	
 	/**
 	 * 返回指定行号的文本。
@@ -17,7 +17,7 @@ public interface CodeList extends NccModuleObject{
 	 * @return 指定行号对应的文本。
 	 * @throws IndexOutOfBoundsException 行号超过总行数或者小于0时抛出的异常。
 	 */
-	public String getCode(int lineIndex);
+	public Code getCode(int lineIndex);
 	
 	/**
 	 * 返回程序总共的行数。

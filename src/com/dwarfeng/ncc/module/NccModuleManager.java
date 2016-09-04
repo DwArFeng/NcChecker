@@ -1,11 +1,12 @@
 package com.dwarfeng.ncc.module;
 
-import java.io.InputStream;
-
 import com.dwarfeng.dfunc.prog.mvc.AbstractModuleManager;
-import com.dwarfeng.ncc.module.expl.CodeLoader;
-import com.dwarfeng.ncc.module.expl.ScannerCodeLoader;
+import com.dwarfeng.ncc.module.expl.ExplMoudle;
+import com.dwarfeng.ncc.module.expl.ExplMoudleControlPort;
+import com.dwarfeng.ncc.module.front.FrontModule;
+import com.dwarfeng.ncc.module.front.FrontModuleControlPort;
 import com.dwarfeng.ncc.program.NccProgramAttrSet;
+import com.dwarfeng.ncc.program.key.ExceptionFieldKey;
 
 /**
  * 数控代码验证程序中的模型控制器，可提供模型控制端口。
@@ -14,7 +15,15 @@ import com.dwarfeng.ncc.program.NccProgramAttrSet;
  */
 public final class NccModuleManager extends AbstractModuleManager<NccModuleControlPort, NccProgramAttrSet>{
 	
+	//-----------------------------以下是需要使用的各种字段键值------------------------------------
 	
+	private static final ExceptionFieldKey KEY_NOTINIT = ExceptionFieldKey.MODL_NOTINIT;
+	private static final ExceptionFieldKey KEY_INITED = ExceptionFieldKey.MODL_INITED;
+	
+	//------------------------------------------------------------------------------------------------
+	
+	private FrontModule frontModule;
+	private ExplMoudle explMoudle;
 
 	private final NccModuleControlPort moduleControlPort = new NccModuleControlPort() {
 
@@ -26,18 +35,28 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 		 */
 		@Override
 		public void init() {
-			//TODO 使用 StringField
-			if(initFlag) throw new IllegalStateException("模型管理器已经初始化了");
-			//TODO
+			if(initFlag) throw new IllegalStateException(getProgramAttrSet().getExceptionField(KEY_INITED));
+			frontModule = new FrontModule(NccModuleManager.this);
+			explMoudle = new ExplMoudle(NccModuleManager.this);
 		}
 
 		/*
 		 * (non-Javadoc)
-		 * @see com.dwarfeng.ncc.module.NccModuleControlPort#newNcCodeLoader(java.io.InputStream)
+		 * @see com.dwarfeng.ncc.module.NccModuleControlPort#getFrontModuleControlPort()
 		 */
 		@Override
-		public CodeLoader newNcCodeLoader(InputStream in) {
-			return new ScannerCodeLoader(NccModuleManager.this, in);
+		public FrontModuleControlPort getFrontModuleControlPort() {
+			if(!initFlag) throw new IllegalStateException(getProgramAttrSet().getExceptionField(KEY_NOTINIT));
+			return frontModule.getFrontModuleControlPort();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.module.NccModuleControlPort#getExplMoudleControlPort()
+		 */
+		@Override
+		public ExplMoudleControlPort getExplMoudleControlPort() {
+			return explMoudle.getExplMoudleControlPort();
 		}
 		
 		

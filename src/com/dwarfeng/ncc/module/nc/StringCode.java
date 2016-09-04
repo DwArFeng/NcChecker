@@ -29,10 +29,10 @@ public final class StringCode extends AbstractNccModuleObject implements Code{
 
 	/*
 	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
+	 * @see com.dwarfeng.ncc.module.nc.Code#content()
 	 */
 	@Override
-	public String toString() {
+	public String content() {
 		return code;
 	}
 	

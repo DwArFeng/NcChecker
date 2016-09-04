@@ -20,5 +20,11 @@ public interface NccControlPort extends ControlPort {
 	 * @throws IllegalStateException 程序未启动时调用此方法。
 	 */
 	public void exitProgram();
+	
+	/**
+	 * 通知程序管理器需要打开某个NC文件。
+	 * @throws IllegalStateException 程序未启动时调用此方法。
+	 */
+	public void openNcFile();
 
 }

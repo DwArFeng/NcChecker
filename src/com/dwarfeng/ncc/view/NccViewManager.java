@@ -3,9 +3,12 @@ package com.dwarfeng.ncc.view;
 import com.dwarfeng.dfunc.prog.mvc.AbstractViewManager;
 import com.dwarfeng.ncc.control.NccControlPort;
 import com.dwarfeng.ncc.program.NccProgramAttrSet;
-import com.dwarfeng.ncc.program.conf.MainFrameAppearConfig;
+import com.dwarfeng.ncc.program.key.ExceptionFieldKey;
 import com.dwarfeng.ncc.view.gui.NccFrame;
 import com.dwarfeng.ncc.view.gui.NccFrameControlPort;
+import com.dwarfeng.ncc.view.gui.NotifyControlPort;
+import com.dwarfeng.ncc.view.gui.Notifyer;
+import com.dwarfeng.ncc.view.gui.ProgressMonitor;
 
 /**
  * 数控代码验证程序中的视图控制器，可以提供视图控制端口。
@@ -14,7 +17,15 @@ import com.dwarfeng.ncc.view.gui.NccFrameControlPort;
  */
 public final class NccViewManager extends AbstractViewManager<NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 	
+	//-----------------------------以下是需要使用的各种字段键值------------------------------------
+	
+	private static final ExceptionFieldKey KEY_NOTINIT = ExceptionFieldKey.VIEW_NOTINIT;
+	private static final ExceptionFieldKey KEY_INITED = ExceptionFieldKey.VIEW_INITED;
+	
+	//------------------------------------------------------------------------------------------------
+	
 	private NccFrame mainFrame;
+	private Notifyer notifyer;
 	
 	private NccViewControlPort viewControlPort = new NccViewControlPort() {
 		
@@ -26,10 +37,10 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 		 */
 		@Override
 		public void init() {
-			//TODO 改成StringField
-			if(initFlag) throw new IllegalStateException("视图管理器已经初始化了");
+			if(initFlag) throw new IllegalStateException(getProgramAttrSet().getExceptionField(KEY_INITED));
 			initFlag = true;
 			mainFrame = new NccFrame(NccViewManager.this);
+			notifyer = new Notifyer(NccViewManager.this, mainFrame);
 		}
 
 		/*
@@ -38,11 +49,29 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 		 */
 		@Override
 		public NccFrameControlPort getMainFrameControlPort() {
-			//TODO 改成StringField
-			if(!initFlag) throw new IllegalStateException("视图管理器还未初始化");
+			if(!initFlag) throw new IllegalStateException(getProgramAttrSet().getExceptionField(KEY_NOTINIT));
 			return mainFrame.getControlPort();
 		}
 		
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.view.NccViewControlPort#getNotifyControlPort()
+		 */
+		@Override
+		public NotifyControlPort getNotifyControlPort() {
+			if(!initFlag) throw new IllegalStateException(getProgramAttrSet().getExceptionField(KEY_NOTINIT));
+			return notifyer.getNotifyControlPort();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.view.NccViewControlPort#getProgressMonitor()
+		 */
+		@Override
+		public ProgressMonitor getProgressMonitor() {
+			if(!initFlag) throw new IllegalStateException(getProgramAttrSet().getExceptionField(KEY_NOTINIT));
+			return mainFrame.getProgressMonitor();
+		}
 		
 	};
 	

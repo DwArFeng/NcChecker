@@ -1,5 +1,7 @@
 package com.dwarfeng.ncc.module.nc;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -15,9 +17,9 @@ import com.dwarfeng.ncc.module.expl.ExplState;
  */
 public final class ArrayCodeList extends AbstractNccModuleObject implements CodeList {
 
-	private final String[] codeArray;
+	private final Code[] codeArray;
 	
-	public ArrayCodeList(NccModuleManager moduleManager,String[] codeArray) {
+	public ArrayCodeList(NccModuleManager moduleManager,Code[] codeArray) {
 		super(moduleManager);
 		Objects.requireNonNull(codeArray);
 		this.codeArray = codeArray;
@@ -35,7 +37,7 @@ public final class ArrayCodeList extends AbstractNccModuleObject implements Code
 	 * @see com.dwarfeng.ncc.module.nc.NcCode#getCode(int)
 	 */
 	@Override
-	public String getCode(int lineIndex) {
+	public Code getCode(int lineIndex) {
 		ensureIndex(lineIndex);
 		return codeArray[lineIndex];
 	}
@@ -80,7 +82,10 @@ public final class ArrayCodeList extends AbstractNccModuleObject implements Code
 		}
 	}
 
-	
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -90,5 +95,37 @@ public final class ArrayCodeList extends AbstractNccModuleObject implements Code
 			.append(explState)
 			.append("]");
 		return sb.toString();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see java.lang.Iterable#iterator()
+	 */
+	@Override
+	public Iterator<Code> iterator() {
+		return new Iterator<Code>() {
+
+			private int index = 0;
+			
+			/*
+			 * (non-Javadoc)
+			 * @see java.util.Iterator#hasNext()
+			 */
+			@Override
+			public boolean hasNext() {
+				return index < getTotleLine()-1;
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see java.util.Iterator#next()
+			 */
+			@Override
+			public Code next() {
+				if(index >= getTotleLine()) throw new NoSuchElementException();
+				return getCode(index++);
+			}
+			
+		};
 	}
 }

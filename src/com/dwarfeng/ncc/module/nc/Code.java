@@ -8,6 +8,6 @@ public interface Code extends NccModuleObject{
 	 * 返回该代码的文本形式。
 	 * @return 该代码的文本形式。
 	 */
-	@Override
-	public String toString();
+	public String content();
+	
 }

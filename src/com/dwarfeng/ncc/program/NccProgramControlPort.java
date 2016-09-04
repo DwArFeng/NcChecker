@@ -13,9 +13,16 @@ import com.dwarfeng.ncc.program.conf.MainFrameAppearConfig;
 public interface NccProgramControlPort extends ProgramControlPort{
 	
 	/**
+	 * 初始化
+	 * @throws IllegalStateException 重复初始化。
+	 */
+	public void init();
+	
+	/**
 	 * 保存指定的外观设置。
 	 * @param config 指定的外观设置。
 	 * @throws IOException IO异常。
+	 * @throws IllegalStateException 程序管理器没初始化。
 	 */
 	public void saveMainFrameAppearConfig(MainFrameAppearConfig config)throws IOException;
 	
@@ -25,8 +32,15 @@ public interface NccProgramControlPort extends ProgramControlPort{
 	 * @return 外观配置。
 	 * @throws IOException IO异常。
 	 * @throws NumberFormatException 数字格式异常：在配置文件被外部更改时可能会抛出。
+	 * @throws IllegalStateException 程序管理器没初始化。
 	 */
 	public MainFrameAppearConfig loadMainFrameAppearConfig() throws IOException,NumberFormatException;
 
+	/**
+	 * 向后台线程发起一个运行请求。
+	 * @param runnable 可运行对象。
+	 * @throws IllegalStateException 程序管理器没初始化。
+	 */
+	public void backInvoke(Runnable runnable);
 	
 }
