@@ -1,7 +1,5 @@
 package com.dwarfeng.ncc.module.nc;
 
-import com.dwarfeng.ncc.module.NccModuleManager;
-import com.dwarfeng.ncc.module.AbstractNccModuleObject;
 
 
 
@@ -10,29 +8,18 @@ import com.dwarfeng.ncc.module.AbstractNccModuleObject;
  * @author DwArFeng
  * @since 1.8
  */
-public final class PointVector3D extends AbstractNccModuleObject implements Vector3D {
+public final class PointVector3D implements Vector3D {
 	
 	private double x,y,z;
 	
-	/**
-	 * 构造一个向量为<code>(0,0,0)</code>的 {@link Vector3D}类。
-	 * @param moduleManager 指定的模型管理器。
-	 * @throws NullPointerException <code>moduleManager</code>为 <code>null</code>是抛出此异常。
-	 */
-	public PointVector3D(NccModuleManager moduleManager) {
-		this(moduleManager,0,0,0);
-	}
 	
 	/**
 	 * 构造一个指定的 {@link Vector3D}类。
-	 * @param moduleManager 指定的模型管理器。
 	 * @param x 指定的x坐标。
 	 * @param y 指定的y坐标。
 	 * @param z 指定的z坐标。
-	 * @throws NullPointerException <code>moduleManager</code>为<code>null</code>时抛出此异常。
 	 */
-	public PointVector3D(NccModuleManager moduleManager,double x, double y, double z) {
-		super(moduleManager);
+	public PointVector3D(double x, double y, double z) {
 		this.x = x ;
 		this.y = y;
 		this.z = z;

@@ -1,12 +1,14 @@
 package com.dwarfeng.ncc.module;
 
+import java.io.InputStream;
+
 import com.dwarfeng.dfunc.prog.mvc.AbstractModuleManager;
-import com.dwarfeng.ncc.module.expl.ExplMoudle;
-import com.dwarfeng.ncc.module.expl.ExplMoudleControlPort;
-import com.dwarfeng.ncc.module.front.FrontModule;
+import com.dwarfeng.ncc.module.expl.CodeLoader;
+import com.dwarfeng.ncc.module.expl.ExplControlPort;
+import com.dwarfeng.ncc.module.expl.ScannerCodeLoader;
 import com.dwarfeng.ncc.module.front.FrontModuleControlPort;
+import com.dwarfeng.ncc.module.nc.CodeSerial;
 import com.dwarfeng.ncc.program.NccProgramAttrSet;
-import com.dwarfeng.ncc.program.key.ExceptionFieldKey;
 
 /**
  * 数控代码验证程序中的模型控制器，可提供模型控制端口。
@@ -17,13 +19,10 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 	
 	//-----------------------------以下是需要使用的各种字段键值------------------------------------
 	
-	private static final ExceptionFieldKey KEY_NOTINIT = ExceptionFieldKey.MODL_NOTINIT;
-	private static final ExceptionFieldKey KEY_INITED = ExceptionFieldKey.MODL_INITED;
+	private static final String KEY_NOTINIT = "模型管理器还没有初始化";
+	private static final String KEY_INITED = "模型管理器已经初始化了";
 	
 	//------------------------------------------------------------------------------------------------
-	
-	private FrontModule frontModule;
-	private ExplMoudle explMoudle;
 
 	private final NccModuleControlPort moduleControlPort = new NccModuleControlPort() {
 
@@ -35,9 +34,8 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 		 */
 		@Override
 		public void init() {
-			if(initFlag) throw new IllegalStateException(getProgramAttrSet().getExceptionField(KEY_INITED));
-			frontModule = new FrontModule(NccModuleManager.this);
-			explMoudle = new ExplMoudle(NccModuleManager.this);
+			if(initFlag) throw new IllegalStateException(KEY_INITED);
+			initFlag = true;
 		}
 
 		/*
@@ -46,8 +44,8 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 		 */
 		@Override
 		public FrontModuleControlPort getFrontModuleControlPort() {
-			if(!initFlag) throw new IllegalStateException(getProgramAttrSet().getExceptionField(KEY_NOTINIT));
-			return frontModule.getFrontModuleControlPort();
+			if(!initFlag) throw new IllegalStateException(KEY_NOTINIT);
+			return frontModuleControlPort;
 		}
 
 		/*
@@ -55,12 +53,60 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 		 * @see com.dwarfeng.ncc.module.NccModuleControlPort#getExplMoudleControlPort()
 		 */
 		@Override
-		public ExplMoudleControlPort getExplMoudleControlPort() {
-			return explMoudle.getExplMoudleControlPort();
+		public ExplControlPort getExplMoudleControlPort() {
+			if(!initFlag) throw new IllegalStateException(KEY_NOTINIT);
+			return explControlPort;
 		}
 		
 		
 	};
+	
+	private final ExplControlPort explControlPort = new ExplControlPort() {
+		
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.module.expl.ExplControlPort#newNcCodeLoader(java.io.InputStream)
+		 */
+		@Override
+		public CodeLoader newNcCodeLoader(InputStream in) {
+			return new ScannerCodeLoader(in);
+		}
+	};
+	
+	private CodeSerial frontCodeSerial;
+	
+	private final FrontModuleControlPort frontModuleControlPort = new FrontModuleControlPort() {
+		
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#setFrontCodeSerial(com.dwarfeng.ncc.module.nc.CodeSerial)
+		 */
+		@Override
+		public void setFrontCodeSerial(CodeSerial codeSerial) {
+			frontCodeSerial = codeSerial;
+		}
+		
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#getFrontCodeSerial()
+		 */
+		@Override
+		public CodeSerial getFrontCodeSerial() {
+			return frontCodeSerial;
+		}
+	};
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	/*
 	 * (non-Javadoc)

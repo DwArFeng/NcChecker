@@ -5,9 +5,9 @@ import java.io.InputStream;
 import java.util.Objects;
 import java.util.Scanner;
 
-import com.dwarfeng.ncc.module.AbstractNccModuleObject;
-import com.dwarfeng.ncc.module.NccModuleManager;
+import com.dwarfeng.ncc.module.nc.AttrCodeLabel;
 import com.dwarfeng.ncc.module.nc.Code;
+import com.dwarfeng.ncc.module.nc.CodeLabel;
 import com.dwarfeng.ncc.module.nc.StringCode;
 
 /**
@@ -15,18 +15,17 @@ import com.dwarfeng.ncc.module.nc.StringCode;
  * @author DwArFeng
  * @since 1.8
  */
-public final class ScannerCodeLoader extends AbstractNccModuleObject implements CodeLoader {
+public final class ScannerCodeLoader implements CodeLoader {
 
 	private final Scanner scanner;
+	private int lineIndex = 1;
 	
 	/**
 	 * 生成一个扫描NC代码读取器。
-	 * @param moduleManager 指定的模型管理器。
 	 * @param in 指定的输入流。
-	 * @throws NullPointerException 当 <code>moduleManager</code>为 <code>null</code>时。
+	 * @throws NullPointerException 当入口参数为 <code>null</code>时。
 	 */
-	public ScannerCodeLoader(NccModuleManager moduleManager,InputStream in) {
-		super(moduleManager);
+	public ScannerCodeLoader(InputStream in) {
 		Objects.requireNonNull(in);
 		this.scanner = new Scanner(in);
 	}
@@ -59,7 +58,8 @@ public final class ScannerCodeLoader extends AbstractNccModuleObject implements 
 	 */
 	@Override
 	public Code loadNext() throws IOException {
-		return new StringCode(moduleManager, scanner.nextLine());
+		CodeLabel codeLabel = new AttrCodeLabel.Builder().lineNumber(lineIndex++).build();
+		return new StringCode(scanner.nextLine(), codeLabel);
 	}
 
 	/*

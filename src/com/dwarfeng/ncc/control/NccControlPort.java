@@ -22,9 +22,10 @@ public interface NccControlPort extends ControlPort {
 	public void exitProgram();
 	
 	/**
-	 * 通知程序管理器需要打开某个NC文件。
+	 * 获取文件控制站。
+	 * @return 文件控制站。
 	 * @throws IllegalStateException 程序未启动时调用此方法。
 	 */
-	public void openNcFile();
-
+	public FileControlPort getFileControlPort();
+	
 }

@@ -1,6 +1,5 @@
 package com.dwarfeng.ncc.module.nc;
 
-import com.dwarfeng.ncc.module.NccModuleObject;
 import com.dwarfeng.ncc.module.mut.Modals.G0;
 import com.dwarfeng.ncc.module.mut.Modals.G90;
 
@@ -13,7 +12,7 @@ import com.dwarfeng.ncc.module.mut.Modals.G90;
  * @author DwArFeng
  * @since 1.8
  */
-public interface Modal extends NccModuleObject{
+public interface Modal{
 	
 	/**
 	 * 获取G0组模态。

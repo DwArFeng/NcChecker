@@ -1,7 +1,5 @@
 package com.dwarfeng.ncc.module.nc;
 
-import com.dwarfeng.ncc.module.NccModuleObject;
-
 
 /**
  * 刀具点位。
@@ -9,7 +7,7 @@ import com.dwarfeng.ncc.module.NccModuleObject;
  * @author DwArFeng
  * @since 1.8
  */
-public interface ToolPoint extends NccModuleObject{
+public interface ToolPoint{
 	
 	/**
 	 * 刀具的刀尖位置。

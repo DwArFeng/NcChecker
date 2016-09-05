@@ -13,7 +13,9 @@ import java.util.ResourceBundle;
 import com.dwarfeng.dfunc.io.FileFunction;
 import com.dwarfeng.dfunc.prog.mvc.AbstractProgramManager;
 import com.dwarfeng.dfunc.threads.RunnerQueue;
-import com.dwarfeng.ncc.program.conf.MainFrameAppearConfig;
+import com.dwarfeng.ncc.program.conf.ConfigControlPort;
+import com.dwarfeng.ncc.program.conf.FrontModuleConfig;
+import com.dwarfeng.ncc.program.conf.MfAppearConfig;
 import com.dwarfeng.ncc.program.key.ExceptionFieldKey;
 import com.dwarfeng.ncc.program.key.StringFieldKey;
 
@@ -27,7 +29,7 @@ public final class NccProgramManager extends AbstractProgramManager<NccProgramCo
 	//-----------------------------以下是需要使用的各种字段键值------------------------------------
 	
 	private static final String KEY_NOTINIT = "程序管理器还未初始化。";
-	private static final ExceptionFieldKey KEY_INITED = ExceptionFieldKey.PROG_INITED;
+	private static final String KEY_INITED = "程序管理器已经初始化了。";
 	
 	//------------------------------------------------------------------------------------------------
 	
@@ -50,84 +52,12 @@ public final class NccProgramManager extends AbstractProgramManager<NccProgramCo
 		 */
 		@Override
 		public void init() {
-			if(initFlag) throw new IllegalStateException(programAttrSet.getExceptionField(KEY_INITED));
+			if(initFlag) throw new IllegalStateException(KEY_INITED);
 			stringField = ResourceBundle.getBundle(STRING_FIELD_PATH,Locale.getDefault(),NccProgramManager.class.getClassLoader());
 			exceptionField = ResourceBundle.getBundle(EXCEPTION_FIELD_PATH,Locale.getDefault(),NccProgramManager.class.getClassLoader());
 			runnerQueue = new RunnerQueue<Runnable>();
 			runnerQueue.runThread();
 			initFlag = true;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.dwarfeng.ncc.program.NccProgramControlPort#saveAppearConfig(com.dwarfeng.ncc.program.conf.AppearConfig)
-		 */
-		@Override
-		public void saveMainFrameAppearConfig(MainFrameAppearConfig config) throws IOException {
-			if(!initFlag) throw new IllegalStateException(KEY_NOTINIT);
-			
-			Properties properties = new Properties();
-			
-			properties.put(MainFrameAppearConfig.SF_extendedState, ""+config.getExtendedState());
-			properties.put(MainFrameAppearConfig.SF_frameWidth, ""+config.getFrameWidth());
-			properties.put(MainFrameAppearConfig.SF_frameHeitht, ""+config.getFrameHeight());
-			properties.put(MainFrameAppearConfig.SF_codePanelWidth, ""+config.getCodePanelWidth());
-			properties.put(MainFrameAppearConfig.SF_consolePanelHeight, ""+config.getConsolePanelHeight());
-			
-			File file = new File(MFAPPEAR_CONFIG_PATH);
-			OutputStream out = null;
-			
-			try{
-				FileFunction.createFileIfNotExists(file);
-				out = new FileOutputStream(file);
-				properties.store(out, MFAPPEAR_CONFIG_COMMENT);
-			}finally{
-				if(out != null) out.close(); 
-			}
-			
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.dwarfeng.ncc.program.NccProgramControlPort#loadMainFrameAppearConfig()
-		 */
-		@Override
-		public MainFrameAppearConfig loadMainFrameAppearConfig()throws IOException, NumberFormatException {
-			if(!initFlag) throw new IllegalStateException(KEY_NOTINIT);
-			
-			MainFrameAppearConfig def = MainFrameAppearConfig.DEFAULT_CONFIG;
-			
-			InputStream in = null;
-			
-			int mExpandState;
-			int mFrameWidth;
-			int mFrameHeight;
-			int mCodePanelWidth;
-			int mConsolePanelHeight;
-			
-			try {
-				in = new FileInputStream(new File(MFAPPEAR_CONFIG_PATH));
-				Properties properties = new Properties();
-				properties.load(in);
-				
-				mExpandState = new Integer(properties.getProperty(MainFrameAppearConfig.SF_extendedState,""+def.getExtendedState()));
-				mFrameWidth = new Integer(properties.getProperty(MainFrameAppearConfig.SF_frameWidth,""+def.getFrameWidth()));
-				mFrameHeight = new Integer(properties.getProperty(MainFrameAppearConfig.SF_frameHeitht,""+def.getFrameHeight()));
-				mCodePanelWidth = new Integer(properties.getProperty(MainFrameAppearConfig.SF_codePanelWidth,""+def.getCodePanelWidth()));
-				mConsolePanelHeight = new Integer(properties.getProperty(MainFrameAppearConfig.SF_consolePanelHeight,""+def.getConsolePanelHeight()));
-				
-				return new MainFrameAppearConfig.Builder()
-						.extendedState(mExpandState)
-						.frameWidth(mFrameWidth)
-						.frameHeight(mFrameHeight)
-						.codePanelWidth(mCodePanelWidth)
-						.consolePanelHeight(mConsolePanelHeight)
-						.build();
-				
-			}finally{
-				if(in != null) in.close();
-			}
-			
 		}
 
 		/*
@@ -138,6 +68,16 @@ public final class NccProgramManager extends AbstractProgramManager<NccProgramCo
 		public void backInvoke(Runnable runnable) {
 			if(!initFlag) throw new IllegalStateException(KEY_NOTINIT);
 			runnerQueue.invoke(runnable);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.program.NccProgramControlPort#getConfigControlPort()
+		 */
+		@Override
+		public ConfigControlPort getConfigControlPort() {
+			if(!initFlag) throw new IllegalStateException(KEY_NOTINIT);
+			return configControlPort;
 		}
 
 		
@@ -167,6 +107,118 @@ public final class NccProgramManager extends AbstractProgramManager<NccProgramCo
 		}
 		
 	};
+	
+	private final ConfigControlPort configControlPort = new ConfigControlPort() {
+		
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.program.conf.ConfigControlPort#saveMainFrameAppearConfig(com.dwarfeng.ncc.program.conf.MfAppearConfig)
+		 */
+		@Override
+		public void saveMainFrameAppearConfig(MfAppearConfig config)
+				throws IOException {
+			if(!initFlag) throw new IllegalStateException(KEY_NOTINIT);
+			
+			Properties properties = new Properties();
+			
+			properties.put(MfAppearConfig.SF_extendedState, ""+config.getExtendedState());
+			properties.put(MfAppearConfig.SF_frameWidth, ""+config.getFrameWidth());
+			properties.put(MfAppearConfig.SF_frameHeitht, ""+config.getFrameHeight());
+			properties.put(MfAppearConfig.SF_codePanelWidth, ""+config.getCodePanelWidth());
+			properties.put(MfAppearConfig.SF_consolePanelHeight, ""+config.getConsolePanelHeight());
+			
+			File file = new File(MFAPPEAR_CONFIG_PATH);
+			OutputStream out = null;
+			
+			try{
+				FileFunction.createFileIfNotExists(file);
+				out = new FileOutputStream(file);
+				properties.store(out, MFAPPEAR_CONFIG_COMMENT);
+			}finally{
+				if(out != null) out.close(); 
+			}
+			
+		}
+		
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.program.conf.ConfigControlPort#loadMainFrameAppearConfig()
+		 */
+		@Override
+		public MfAppearConfig loadMainFrameAppearConfig() throws IOException,
+				NumberFormatException {
+			if(!initFlag) throw new IllegalStateException(KEY_NOTINIT);
+			
+			MfAppearConfig def = MfAppearConfig.DEFAULT_CONFIG;
+			
+			InputStream in = null;
+			
+			int mExpandState;
+			int mFrameWidth;
+			int mFrameHeight;
+			int mCodePanelWidth;
+			int mConsolePanelHeight;
+			
+			try {
+				in = new FileInputStream(new File(MFAPPEAR_CONFIG_PATH));
+				Properties properties = new Properties();
+				properties.load(in);
+				
+				mExpandState = new Integer(properties.getProperty(MfAppearConfig.SF_extendedState,""+def.getExtendedState()));
+				mFrameWidth = new Integer(properties.getProperty(MfAppearConfig.SF_frameWidth,""+def.getFrameWidth()));
+				mFrameHeight = new Integer(properties.getProperty(MfAppearConfig.SF_frameHeitht,""+def.getFrameHeight()));
+				mCodePanelWidth = new Integer(properties.getProperty(MfAppearConfig.SF_codePanelWidth,""+def.getCodePanelWidth()));
+				mConsolePanelHeight = new Integer(properties.getProperty(MfAppearConfig.SF_consolePanelHeight,""+def.getConsolePanelHeight()));
+				
+				return new MfAppearConfig.Builder()
+						.extendedState(mExpandState)
+						.frameWidth(mFrameWidth)
+						.frameHeight(mFrameHeight)
+						.codePanelWidth(mCodePanelWidth)
+						.consolePanelHeight(mConsolePanelHeight)
+						.build();
+				
+			}finally{
+				if(in != null) in.close();
+			}
+			
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.program.conf.ConfigControlPort#saveFrontModuleConfig(com.dwarfeng.ncc.program.conf.FrontModuleConfig)
+		 */
+		@Override
+		public void saveFrontModuleConfig(FrontModuleConfig config)throws IOException {
+			// TODO Auto-generated method stub
+			
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.program.conf.ConfigControlPort#loadFrontModuleConfig()
+		 */
+		@Override
+		public FrontModuleConfig loadFrontModuleConfig() throws IOException, NumberFormatException {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	};
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	/*
 	 * (non-Javadoc)

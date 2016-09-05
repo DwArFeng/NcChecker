@@ -1,13 +1,11 @@
 package com.dwarfeng.ncc.module.nc;
 
-import com.dwarfeng.ncc.module.NccModuleObject;
-
 /**
  * 三维向量。
  * @author DwArFeng
  * @since 1.8
  */
-public interface Vector3D extends NccModuleObject{
+public interface Vector3D{
 	
 	/**
 	 * 获取x坐标。

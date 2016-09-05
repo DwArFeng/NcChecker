@@ -1,7 +1,7 @@
 package com.dwarfeng.ncc.module;
 
 import com.dwarfeng.dfunc.prog.mvc.ModuleControlPort;
-import com.dwarfeng.ncc.module.expl.ExplMoudleControlPort;
+import com.dwarfeng.ncc.module.expl.ExplControlPort;
 import com.dwarfeng.ncc.module.front.FrontModuleControlPort;
 
 /**
@@ -29,6 +29,6 @@ public interface NccModuleControlPort extends ModuleControlPort {
 	 * @return 解释模型控制站。
 	 * @throws IllegalStateException 模型管理器还未初始化。
 	 */
-	public ExplMoudleControlPort getExplMoudleControlPort();
+	public ExplControlPort getExplMoudleControlPort();
 
 }

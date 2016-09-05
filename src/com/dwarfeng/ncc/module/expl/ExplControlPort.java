@@ -2,14 +2,12 @@ package com.dwarfeng.ncc.module.expl;
 
 import java.io.InputStream;
 
-import com.dwarfeng.ncc.module.NccModuleObject;
-
 /**
  * 解释控制站。
  * @author DwArFeng
  * @since 1.8
  */
-public interface ExplMoudleControlPort extends NccModuleObject{
+public interface ExplControlPort{
 
 	/**
 	 * 获取一个针对指定输入流的新的 {@link CodeLoader}。

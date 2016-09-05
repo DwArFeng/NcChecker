@@ -7,7 +7,7 @@ import com.dwarfeng.dfunc.infs.Buildable;
  * @author DwArFeng
  * @since 1.8
  */
-public final class MainFrameAppearConfig {
+public final class MfAppearConfig {
 	
 	public static final String SF_extendedState = "mes";
 	public static final String SF_frameWidth = "mfw";
@@ -15,15 +15,15 @@ public final class MainFrameAppearConfig {
 	public static final String SF_codePanelWidth = "mdw";
 	public static final String SF_consolePanelHeight = "mnh";
 	
-	public static final MainFrameAppearConfig DEFAULT_CONFIG = 
-			new MainFrameAppearConfig(0, 800, 600, 300, 100);
+	public static final MfAppearConfig DEFAULT_CONFIG = 
+			new MfAppearConfig(0, 800, 600, 300, 100);
 	
 	/**
 	 * 外观配置的构s造类。
 	 * @author DwArFeng
 	 * @since 1.8
 	 */
-	public static class Builder implements Buildable<MainFrameAppearConfig>{
+	public static class Builder implements Buildable<MfAppearConfig>{
 
 		private int extendedState = DEFAULT_CONFIG.extendedState;
 		private int frameWidth = DEFAULT_CONFIG.frameWidth;
@@ -87,8 +87,8 @@ public final class MainFrameAppearConfig {
 		 * @see com.dwarfeng.dfunc.infs.Buildable#build()
 		 */
 		@Override
-		public MainFrameAppearConfig build() {
-			return new MainFrameAppearConfig(
+		public MfAppearConfig build() {
+			return new MfAppearConfig(
 					extendedState, 
 					frameWidth, 
 					frameHeight, 
@@ -105,7 +105,7 @@ public final class MainFrameAppearConfig {
 	private final int codePanelWidth;
 	private final int consolePanelHeight;
 
-	private MainFrameAppearConfig(
+	private MfAppearConfig(
 			int mExtendedState,
 			int mFrameWidth,
 			int mFrameHeight,

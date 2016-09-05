@@ -1,35 +1,35 @@
 package com.dwarfeng.ncc.module.nc;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import com.dwarfeng.ncc.module.AbstractNccModuleObject;
-import com.dwarfeng.ncc.module.NccModuleManager;
-import com.dwarfeng.ncc.module.expl.ExplState;
 
 /**
  * 利用数组实现的NC代码列表。
  * @author DwArFeng
  * @since 1.8
  */
-public final class ArrayCodeList extends AbstractNccModuleObject implements CodeList {
+public final class ArrayCodeList implements CodeSerial {
 
 	private final Code[] codeArray;
 	
-	public ArrayCodeList(NccModuleManager moduleManager,Code[] codeArray) {
-		super(moduleManager);
+	/**
+	 * 构造一个由指定数组组成的代码列表。
+	 * @param codeArray 指定的数组。
+	 * @throws NullPointerException 入口参数为 <code>null</code>。
+	 * @throws 代码不呈颗粒性递增。
+	 */
+	public ArrayCodeList(Code[] codeArray) {
 		Objects.requireNonNull(codeArray);
 		this.codeArray = codeArray;
-		explState = ExplState.NOTEXPL;
-	}
-
-	private void ensureIndex(int lineIndex){
-		if(lineIndex < 0 || lineIndex >= codeArray.length)
-			//TODO 使用StringField
-			throw new IndexOutOfBoundsException("超界");
+		if(codeArray.length > 2){
+			Arrays.sort(this.codeArray, new CodeComparator());
+			for(int i = 0 ; i < this.codeArray.length - 2; i ++){
+				if(this.codeArray[i].getLabel().getLineIndex() != this.codeArray[i+1].getLabel().getLineIndex() - 1)
+					throw new IllegalArgumentException();
+			}
+		}
 	}
 	
 	/*
@@ -38,50 +38,11 @@ public final class ArrayCodeList extends AbstractNccModuleObject implements Code
 	 */
 	@Override
 	public Code getCode(int lineIndex) {
-		ensureIndex(lineIndex);
-		return codeArray[lineIndex];
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.nc.NcCode#getTotleLine()
-	 */
-	@Override
-	public int getTotleLine() {
-		return codeArray.length;
+		if(lineIndex > getMaxLineNumber() || lineIndex < getMinLineNumber()) 
+			throw new NoSuchElementException();
+		return codeArray[lineIndex - getMinLineNumber()];
 	}
 	
-	private ExplState explState;
-	private final ReadWriteLock lock = new ReentrantReadWriteLock();
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.nc.NcCode#getExplState()
-	 */
-	@Override
-	public ExplState getExplState() {
-		lock.readLock().lock();
-		try{
-			return explState;
-		}finally{
-			lock.readLock().unlock();
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.module.nc.NcCode#setExpleState(com.dwarfeng.ncc.module.nc.NcCode.ExplState)
-	 */
-	@Override
-	public void setExpleState(ExplState explState) {
-		lock.writeLock().lock();
-		try{
-			this.explState = explState;
-		}finally{
-			lock.writeLock().unlock();
-		}
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -90,9 +51,11 @@ public final class ArrayCodeList extends AbstractNccModuleObject implements Code
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb	.append("ArrayNcCode [totleLine = ")
-			.append(getTotleLine())
-			.append(" explainState = ")
-			.append(explState)
+			.append(getTotle())
+			.append(" minLine = ")
+			.append(getMaxLineNumber())
+			.append(" maxLine = ")
+			.append(getMaxLineNumber())
 			.append("]");
 		return sb.toString();
 	}
@@ -113,7 +76,7 @@ public final class ArrayCodeList extends AbstractNccModuleObject implements Code
 			 */
 			@Override
 			public boolean hasNext() {
-				return index < getTotleLine()-1;
+				return index < getTotle()-1;
 			}
 
 			/*
@@ -122,10 +85,48 @@ public final class ArrayCodeList extends AbstractNccModuleObject implements Code
 			 */
 			@Override
 			public Code next() {
-				if(index >= getTotleLine()) throw new NoSuchElementException();
+				if(index >= getTotle()) throw new NoSuchElementException();
 				return getCode(index++);
 			}
 			
 		};
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.dwarfeng.ncc.module.nc.CodeSerial#getTotle()
+	 */
+	@Override
+	public int getTotle() {
+		return codeArray.length;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.dwarfeng.ncc.module.nc.CodeSerial#toArray()
+	 */
+	@Override
+	public Code[] toArray() {
+		return this.codeArray;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.dwarfeng.ncc.module.nc.CodeSerial#getMaxLineNumber()
+	 */
+	@Override
+	public int getMaxLineNumber() {
+		if(this.codeArray.length == 0) return -1;
+		return codeArray[0].getLabel().getLineIndex();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.dwarfeng.ncc.module.nc.CodeSerial#getMinLineNumber()
+	 */
+	@Override
+	public int getMinLineNumber() {
+		if(this.codeArray.length == 0) return -1;
+		return codeArray[codeArray.length - 1].getLabel().getLineIndex();
 	}
 }

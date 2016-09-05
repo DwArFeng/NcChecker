@@ -4,14 +4,12 @@ import java.io.File;
 
 import javax.swing.filechooser.FileFilter;
 
-import com.dwarfeng.ncc.view.NccViewObject;
-
 /**
  * 提醒控制站。
  * @author DwArFeng
  * @since 1.8
  */
-public interface NotifyControlPort extends NccViewObject{
+public interface NotifyControlPort{
 
 	/**
 	 * 向用户询问一个文件。

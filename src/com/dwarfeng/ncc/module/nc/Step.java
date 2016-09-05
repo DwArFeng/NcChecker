@@ -1,7 +1,5 @@
 package com.dwarfeng.ncc.module.nc;
 
-import com.dwarfeng.ncc.module.NccModuleObject;
-
 
 /**
  * 刀具单步。
@@ -9,7 +7,7 @@ import com.dwarfeng.ncc.module.NccModuleObject;
  * @author DwArFeng
  * @since 1.8
  */
-public interface Step<T extends ToolPoint, M extends Modal> extends NccModuleObject{
+public interface Step<T extends ToolPoint, M extends Modal>{
 	
 	/**
 	 * 获取该单步的目标点。

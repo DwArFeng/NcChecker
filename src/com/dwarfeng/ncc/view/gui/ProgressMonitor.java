@@ -1,13 +1,11 @@
 package com.dwarfeng.ncc.view.gui;
 
-import com.dwarfeng.ncc.view.NccViewObject;
-
 /**
  * 进度监视器。
  * @author DwArFeng
  * @since 1.8
  */
-public interface ProgressMonitor extends NccViewObject{
+public interface ProgressMonitor{
 
 	/**
 	 * 开始对进度进行监视。

@@ -1,15 +1,12 @@
 package com.dwarfeng.ncc.module.nc;
 
-import com.dwarfeng.ncc.module.NccModuleObject;
-
 /**
  * 刀具步列表。
  * <p> 由连续的刀具单步组成的刀具步列表。
  * @author DwArFeng
  * @since 1.8
  */
-public interface StepList<T extends ToolPoint , M extends Modal> extends Iterable<StepList<T, M>>,
-NccModuleObject{
+public interface StepSerial<T extends ToolPoint , M extends Modal> extends Iterable<StepSerial<T, M>>{
 
 	/**
 	 * 返回指定序号处的刀具单步。

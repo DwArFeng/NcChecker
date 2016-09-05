@@ -1,13 +1,16 @@
 package com.dwarfeng.ncc.view;
 
+import java.io.File;
+
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
+
 import com.dwarfeng.dfunc.prog.mvc.AbstractViewManager;
 import com.dwarfeng.ncc.control.NccControlPort;
 import com.dwarfeng.ncc.program.NccProgramAttrSet;
-import com.dwarfeng.ncc.program.key.ExceptionFieldKey;
 import com.dwarfeng.ncc.view.gui.NccFrame;
 import com.dwarfeng.ncc.view.gui.NccFrameControlPort;
 import com.dwarfeng.ncc.view.gui.NotifyControlPort;
-import com.dwarfeng.ncc.view.gui.Notifyer;
 import com.dwarfeng.ncc.view.gui.ProgressMonitor;
 
 /**
@@ -19,13 +22,12 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 	
 	//-----------------------------以下是需要使用的各种字段键值------------------------------------
 	
-	private static final ExceptionFieldKey KEY_NOTINIT = ExceptionFieldKey.VIEW_NOTINIT;
-	private static final ExceptionFieldKey KEY_INITED = ExceptionFieldKey.VIEW_INITED;
+	private static final String KEY_NOTINIT = "视图管理器没有初始化。";
+	private static final String KEY_INITED = "视图管理器已经初始化了。";
 	
 	//------------------------------------------------------------------------------------------------
 	
 	private NccFrame mainFrame;
-	private Notifyer notifyer;
 	
 	private NccViewControlPort viewControlPort = new NccViewControlPort() {
 		
@@ -37,10 +39,9 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 		 */
 		@Override
 		public void init() {
-			if(initFlag) throw new IllegalStateException(getProgramAttrSet().getExceptionField(KEY_INITED));
+			if(initFlag) throw new IllegalStateException(KEY_INITED);
 			initFlag = true;
-			mainFrame = new NccFrame(NccViewManager.this);
-			notifyer = new Notifyer(NccViewManager.this, mainFrame);
+			mainFrame = new NccFrame(programAttrSet,controlPort);
 		}
 
 		/*
@@ -49,8 +50,8 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 		 */
 		@Override
 		public NccFrameControlPort getMainFrameControlPort() {
-			if(!initFlag) throw new IllegalStateException(getProgramAttrSet().getExceptionField(KEY_NOTINIT));
-			return mainFrame.getControlPort();
+			if(!initFlag) throw new IllegalStateException(KEY_NOTINIT);
+			return mainFrame.getFrameControlPort();
 		}
 		
 		/*
@@ -59,8 +60,8 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 		 */
 		@Override
 		public NotifyControlPort getNotifyControlPort() {
-			if(!initFlag) throw new IllegalStateException(getProgramAttrSet().getExceptionField(KEY_NOTINIT));
-			return notifyer.getNotifyControlPort();
+			if(!initFlag) throw new IllegalStateException(KEY_NOTINIT);
+			return notifyControlPort;
 		}
 
 		/*
@@ -69,11 +70,50 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 		 */
 		@Override
 		public ProgressMonitor getProgressMonitor() {
-			if(!initFlag) throw new IllegalStateException(getProgramAttrSet().getExceptionField(KEY_NOTINIT));
+			if(!initFlag) throw new IllegalStateException(KEY_NOTINIT);
 			return mainFrame.getProgressMonitor();
 		}
 		
 	};
+	
+	private final NotifyControlPort notifyControlPort = new NotifyControlPort() {
+		
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.view.gui.NotifyControlPort#askFile(javax.swing.filechooser.FileFilter[], boolean)
+		 */
+		@Override
+		public File askFile(FileFilter[] fileFilters, boolean allFileAllowed) {
+			JFileChooser fc = new JFileChooser();
+			fc.resetChoosableFileFilters();
+			for(FileFilter ff:fileFilters) fc.setFileFilter(ff);
+			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			fc.setAcceptAllFileFilterUsed(allFileAllowed);
+			fc.setMultiSelectionEnabled(false);
+			final int res = fc.showOpenDialog(mainFrame);
+			switch (res) {
+				case JFileChooser.CANCEL_OPTION:
+					return null;
+				case JFileChooser.ERROR_OPTION:
+					return null;
+				default:
+					return fc.getSelectedFile();
+			}
+		}
+	};
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	/*
 	 * (non-Javadoc)

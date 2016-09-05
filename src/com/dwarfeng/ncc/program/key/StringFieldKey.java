@@ -27,4 +27,10 @@ public enum StringFieldKey {
 	/**打开文本的描述*/
 	MENU_FILE_OPENFILE_DES,
 	
+	/**正在读取文件*/
+	FILE_NOWLOADING,
+	
+	/**就绪*/
+	OUT_GETREADY,
+	
 }

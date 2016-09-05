@@ -1,54 +1,54 @@
 package com.dwarfeng.ncc.view.gui;
 
 import java.awt.BorderLayout;
-
-import javax.swing.JFrame;
-
-import com.dwarfeng.dfunc.gui.JAdjustableBorderPanel;
-import com.dwarfeng.dfunc.gui.JMenuItemAction;
-import com.dwarfeng.ncc.control.NccControlPort;
-import com.dwarfeng.ncc.program.NccProgramAttrSet;
-import com.dwarfeng.ncc.program.conf.MainFrameAppearConfig;
-import com.dwarfeng.ncc.program.key.ExceptionFieldKey;
-import com.dwarfeng.ncc.program.key.StringFieldKey;
-import com.dwarfeng.ncc.view.NccViewManager;
-import com.dwarfeng.ncc.view.NccViewObject;
-
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-import javax.swing.JProgressBar;
-import javax.swing.JButton;
-import javax.swing.KeyStroke;
-
-import com.dwarfeng.dfunc.gui.JConsole;
-import com.sun.glass.events.KeyEvent;
-
-import javax.swing.JMenuBar;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-
-import javax.swing.JMenu;
-
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Dimension;
-import java.awt.Insets;
-
-import javax.swing.JComboBox;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
+import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
+import javax.swing.ListCellRenderer;
+
+import com.dwarfeng.dfunc.gui.JAdjustableBorderPanel;
+import com.dwarfeng.dfunc.gui.JConsole;
+import com.dwarfeng.dfunc.gui.JMenuItemAction;
+import com.dwarfeng.ncc.control.NccControlPort;
+import com.dwarfeng.ncc.module.nc.Code;
+import com.dwarfeng.ncc.module.nc.CodeLabel;
+import com.dwarfeng.ncc.program.AttRefable;
+import com.dwarfeng.ncc.program.NccProgramAttrSet;
+import com.dwarfeng.ncc.program.conf.MfAppearConfig;
+import com.dwarfeng.ncc.program.key.ExceptionFieldKey;
+import com.dwarfeng.ncc.program.key.StringFieldKey;
 
 /**
  * Ncc程序主框架。
  * @author DwArFeng
  * @since 1.8
  */
-public class NccFrame extends JFrame implements NccViewObject{
+public class NccFrame extends JFrame implements AttRefable{
 	
 	//-----------------------------以下是需要使用的各种字段键值------------------------------------
 	
@@ -64,7 +64,8 @@ public class NccFrame extends JFrame implements NccViewObject{
 	
 	//------------------------------------------------------------------------------------------------
 
-	private final NccViewManager viewManager;
+	private final NccProgramAttrSet aSet;
+	private final NccControlPort controlPort;
 	private final JAdjustableBorderPanel mainPanel;
 	private final JAdjustableBorderPanel rightInMain;
 	private final NccMenu menu;
@@ -73,20 +74,25 @@ public class NccFrame extends JFrame implements NccViewObject{
 	private final JLabel progressLabel;
 	private final JButton progressSuspendButton;
 	private final JProgressBar progressBar;
+	private final CodeCenter1 codeCenter1;
 	
-	public NccFrame(NccViewManager viewManager) {
+	public NccFrame(NccProgramAttrSet aSet, NccControlPort controlPort) {
+		Objects.requireNonNull(aSet);
+		Objects.requireNonNull(controlPort);
+		
+		this.aSet = aSet;
+		this.controlPort = controlPort;
+		this.codeCenter1 = new CodeCenter1();
+		
 		setSize(new Dimension(800, 600));
-		
-		this.viewManager = viewManager;
-		
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				controlPort().exitProgram();
+				controlPort.exitProgram();
 			}
 		});
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		setTitle(attrSet().getStringField(KEY_TITLE));
+		setTitle(aSet.getStringField(KEY_TITLE));
 		
 		mainPanel = new JAdjustableBorderPanel();
 		mainPanel.setWestPreferredValue(400);
@@ -110,7 +116,6 @@ public class NccFrame extends JFrame implements NccViewObject{
 		codePanel.setLayout(new BorderLayout(0, 0));
 		
 		JPanel codeNorthPanel = new JPanel();
-		codeNorthPanel.setPreferredSize(new Dimension(10, 100));
 		codeNorthPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		codePanel.add(codeNorthPanel, BorderLayout.NORTH);
 		GridBagLayout gbl_codeNorthPanel = new GridBagLayout();
@@ -126,6 +131,7 @@ public class NccFrame extends JFrame implements NccViewObject{
 			}
 		});
 		GridBagConstraints gbc_btnNewButton_3 = new GridBagConstraints();
+		gbc_btnNewButton_3.insets = new Insets(0, 0, 5, 0);
 		gbc_btnNewButton_3.fill = GridBagConstraints.BOTH;
 		gbc_btnNewButton_3.gridx = 5;
 		gbc_btnNewButton_3.gridy = 0;
@@ -133,6 +139,7 @@ public class NccFrame extends JFrame implements NccViewObject{
 		
 		JButton button = new JButton("");
 		GridBagConstraints gbc_button = new GridBagConstraints();
+		gbc_button.insets = new Insets(0, 0, 0, 5);
 		gbc_button.fill = GridBagConstraints.BOTH;
 		gbc_button.gridx = 0;
 		gbc_button.gridy = 1;
@@ -144,6 +151,7 @@ public class NccFrame extends JFrame implements NccViewObject{
 			}
 		});
 		GridBagConstraints gbc_btnNewButton_1 = new GridBagConstraints();
+		gbc_btnNewButton_1.insets = new Insets(0, 0, 0, 5);
 		gbc_btnNewButton_1.fill = GridBagConstraints.BOTH;
 		gbc_btnNewButton_1.gridx = 1;
 		gbc_btnNewButton_1.gridy = 1;
@@ -157,11 +165,13 @@ public class NccFrame extends JFrame implements NccViewObject{
 		
 		JComboBox comboBox = new JComboBox();
 		GridBagConstraints gbc_comboBox = new GridBagConstraints();
+		gbc_comboBox.insets = new Insets(0, 0, 0, 5);
 		gbc_comboBox.fill = GridBagConstraints.HORIZONTAL;
 		gbc_comboBox.gridx = 2;
 		gbc_comboBox.gridy = 1;
 		codeNorthPanel.add(comboBox, gbc_comboBox);
 		GridBagConstraints gbc_btnNewButton_2 = new GridBagConstraints();
+		gbc_btnNewButton_2.insets = new Insets(0, 0, 0, 5);
 		gbc_btnNewButton_2.fill = GridBagConstraints.BOTH;
 		gbc_btnNewButton_2.gridx = 3;
 		gbc_btnNewButton_2.gridy = 1;
@@ -169,6 +179,7 @@ public class NccFrame extends JFrame implements NccViewObject{
 		
 		JButton button_1 = new JButton("");
 		GridBagConstraints gbc_button_1 = new GridBagConstraints();
+		gbc_button_1.insets = new Insets(0, 0, 0, 5);
 		gbc_button_1.fill = GridBagConstraints.BOTH;
 		gbc_button_1.gridx = 4;
 		gbc_button_1.gridy = 1;
@@ -188,6 +199,8 @@ public class NccFrame extends JFrame implements NccViewObject{
 		codePanel.add(codeCenterPanel, BorderLayout.CENTER);
 		codeCenterPanel.setLayout(new BorderLayout(0, 0));
 		
+		codeCenterPanel.add(codeCenter1, BorderLayout.CENTER);
+		
 		JPanel statusPanel = new JPanel();
 		getContentPane().add(statusPanel, BorderLayout.SOUTH);
 		GridBagLayout gbl_statusPanel = new GridBagLayout();
@@ -197,11 +210,11 @@ public class NccFrame extends JFrame implements NccViewObject{
 		gbl_statusPanel.rowWeights = new double[]{0.0, Double.MIN_VALUE};
 		statusPanel.setLayout(gbl_statusPanel);
 		
-		statusLabel = new JLabel("New label");
+		statusLabel = new JLabel();
 		GridBagConstraints gbc_statusLabel = new GridBagConstraints();
 		gbc_statusLabel.anchor = GridBagConstraints.WEST;
 		gbc_statusLabel.fill = GridBagConstraints.VERTICAL;
-		gbc_statusLabel.insets = new Insets(0, 0, 0, 5);
+		gbc_statusLabel.insets = new Insets(0, 5, 0, 5);
 		gbc_statusLabel.gridx = 0;
 		gbc_statusLabel.gridy = 0;
 		statusPanel.add(statusLabel, gbc_statusLabel);
@@ -216,7 +229,7 @@ public class NccFrame extends JFrame implements NccViewObject{
 		gbc_progressBar.gridy = 0;
 		statusPanel.add(progressBar, gbc_progressBar);
 		
-		progressLabel = new JLabel(attrSet().getStringField(KEY_NOMISSION));
+		progressLabel = new JLabel(aSet.getStringField(KEY_NOMISSION));
 		GridBagConstraints gbc_progressLabel = new GridBagConstraints();
 		gbc_progressLabel.fill = GridBagConstraints.BOTH;
 		gbc_progressLabel.insets = new Insets(0, 0, 0, 5);
@@ -242,32 +255,15 @@ public class NccFrame extends JFrame implements NccViewObject{
 		
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.dwarfeng.ncc.view.NccViewObject#getViewManager()
-	 */
-	@Override
-	public NccViewManager getViewManager() {
-		return viewManager;
-	}
-	
-	private NccProgramAttrSet attrSet(){
-		return getViewManager().getProgramAttrSet();
-	}
-	
-	private NccControlPort controlPort(){
-		return getViewManager().getControlPort();
-	}
-	
 	/**
 	 * 返回该框架的控制站。
 	 * @return 该框架的控制站。
 	 */
-	public NccFrameControlPort getControlPort(){
-		return controlPort;
+	public NccFrameControlPort getFrameControlPort(){
+		return frameControlPort;
 	}
 
-	private final NccFrameControlPort controlPort = new NccFrameControlPort() {
+	private final NccFrameControlPort frameControlPort = new NccFrameControlPort() {
 		
 		/*
 		 * (non-Javadoc)
@@ -283,7 +279,8 @@ public class NccFrame extends JFrame implements NccViewObject{
 		 * @see com.dwarfeng.ncc.view.gui.NccFrameControlPort#applyAppearance(com.dwarfeng.ncc.program.conf.MainFrameAppearConfig)
 		 */
 		@Override
-		public void applyAppearance(MainFrameAppearConfig config) {
+		public void applyAppearance(MfAppearConfig config) {
+			Objects.requireNonNull(config);
 			setExtendedState(config.getExtendedState());
 			setSize(config.getFrameWidth(), config.getFrameHeight());
 			mainPanel.setWestPreferredValue(config.getCodePanelWidth());
@@ -295,14 +292,34 @@ public class NccFrame extends JFrame implements NccViewObject{
 		 * @see com.dwarfeng.ncc.view.gui.NccFrameControlPort#getCurrentAppearance()
 		 */
 		@Override
-		public MainFrameAppearConfig getCurrentAppearance() {
-			return new MainFrameAppearConfig.Builder()
+		public MfAppearConfig getCurrentAppearance() {
+			return new MfAppearConfig.Builder()
 					.extendedState(getExtendedState())
 					.frameWidth(getWidth())
 					.frameHeight(getHeight())
 					.codePanelWidth(mainPanel.getWestPreferredValue())
 					.consolePanelHeight(rightInMain.getSouthPreferredValue())
 					.build();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.view.gui.NccFrameControlPort#setStatusLabelMessage(java.lang.String, com.dwarfeng.ncc.view.gui.StatusLabelType)
+		 */
+		@Override
+		public void setStatusLabelMessage(String message, StatusLabelType type) {
+			statusLabel.setForeground(type.getTextColor());
+			statusLabel.setFont(type.getTexFont());
+			statusLabel.setText(message);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.view.gui.NccFrameControlPort#traceConsole(java.lang.String)
+		 */
+		@Override
+		public void traceInConsole(String message) {
+			console.getOut().println(message);
 		}
 	};
 	
@@ -323,20 +340,11 @@ public class NccFrame extends JFrame implements NccViewObject{
 		
 		/*
 		 * (non-Javadoc)
-		 * @see com.dwarfeng.ncc.view.NccViewObject#getViewManager()
-		 */
-		@Override
-		public NccViewManager getViewManager() {
-			return viewManager;
-		}
-		
-		/*
-		 * (non-Javadoc)
 		 * @see com.dwarfeng.ncc.view.gui.ProgressMonitor#startMonitor()
 		 */
 		@Override
 		public void startMonitor() {
-			if(startFlag) throw new IllegalStateException(attrSet().getExceptionField(KEY_PROGSTARTED));
+			if(startFlag) throw new IllegalStateException(aSet.getExceptionField(KEY_PROGSTARTED));
 			startFlag = true;
 			progressSuspendButton.setEnabled(true);
 			progressBar.setEnabled(true);
@@ -348,7 +356,7 @@ public class NccFrame extends JFrame implements NccViewObject{
 		 */
 		@Override
 		public void setIndeterminate(boolean aFlag) {
-			if(!startFlag) throw new IllegalStateException(attrSet().getExceptionField(KEY_PROGNOTSTART));
+			if(!startFlag) throw new IllegalStateException(aSet.getExceptionField(KEY_PROGNOTSTART));
 			progressBar.setIndeterminate(aFlag);
 		}
 		
@@ -358,7 +366,7 @@ public class NccFrame extends JFrame implements NccViewObject{
 		 */
 		@Override
 		public void setTotleProgress(int val) {
-			if(!startFlag) throw new IllegalStateException(attrSet().getExceptionField(KEY_PROGNOTSTART));
+			if(!startFlag) throw new IllegalStateException(aSet.getExceptionField(KEY_PROGNOTSTART));
 			progressBar.setMaximum(val);
 		}
 		
@@ -368,7 +376,7 @@ public class NccFrame extends JFrame implements NccViewObject{
 		 */
 		@Override
 		public void setCurrentProgress(int val) {
-			if(!startFlag) throw new IllegalStateException(attrSet().getExceptionField(KEY_PROGNOTSTART));
+			if(!startFlag) throw new IllegalStateException(aSet.getExceptionField(KEY_PROGNOTSTART));
 			progressBar.setValue(val);
 		}
 		
@@ -378,7 +386,7 @@ public class NccFrame extends JFrame implements NccViewObject{
 		 */
 		@Override
 		public boolean isSuspend() {
-			if(!startFlag) throw new IllegalStateException(attrSet().getExceptionField(KEY_PROGNOTSTART));
+			if(!startFlag) throw new IllegalStateException(aSet.getExceptionField(KEY_PROGNOTSTART));
 			lock.lock();
 			try{
 				return suspendFlag;
@@ -393,11 +401,11 @@ public class NccFrame extends JFrame implements NccViewObject{
 		 */
 		@Override
 		public void endMonitor() {
-			if(!startFlag) throw new IllegalStateException(attrSet().getExceptionField(KEY_PROGNOTSTART));
+			if(!startFlag) throw new IllegalStateException(aSet.getExceptionField(KEY_PROGNOTSTART));
 			progressBar.setValue(0);
 			progressBar.setEnabled(false);
 			progressSuspendButton.setEnabled(false);
-			progressLabel.setText(attrSet().getStringField(KEY_NOMISSION));
+			progressLabel.setText(aSet.getStringField(KEY_NOMISSION));
 			progressBar.setIndeterminate(false);
 			startFlag = false;
 		}
@@ -408,7 +416,7 @@ public class NccFrame extends JFrame implements NccViewObject{
 		 */
 		@Override
 		public void setMessage(String message) {
-			if(!startFlag) throw new IllegalStateException(attrSet().getExceptionField(KEY_PROGNOTSTART));
+			if(!startFlag) throw new IllegalStateException(aSet.getExceptionField(KEY_PROGNOTSTART));
 			progressLabel.setText(message);
 		}
 
@@ -418,7 +426,7 @@ public class NccFrame extends JFrame implements NccViewObject{
 		 */
 		@Override
 		public void suspend() {
-			if(!startFlag) throw new IllegalStateException(attrSet().getExceptionField(KEY_PROGNOTSTART));
+			if(!startFlag) throw new IllegalStateException(aSet.getExceptionField(KEY_PROGNOTSTART));
 			lock.lock();
 			try{
 				suspendFlag = true;
@@ -429,9 +437,18 @@ public class NccFrame extends JFrame implements NccViewObject{
 		
 	};
 	
+	/*
+	 * (non-Javadoc)
+	 * @see com.dwarfeng.ncc.program.AttRefable#getAttrSet()
+	 */
+	@Override
+	public NccProgramAttrSet getAttrSet() {
+		return aSet;
+	}
 	
 	
-	private class NccMenu extends JMenuBar implements NccViewObject{
+	
+	private class NccMenu extends JMenuBar{
 		
 		private final JMenu file;
 		private final JMenu edit;
@@ -440,43 +457,90 @@ public class NccFrame extends JFrame implements NccViewObject{
 		public NccMenu() {
 			super();
 			//定义菜单栏
-			file = new JMenu(attrSet().getStringField(KEY_FILE) + "(F)");
+			file = new JMenu(aSet.getStringField(KEY_FILE) + "(F)");
 			file.setMnemonic('F');
 			add(file);
-			edit = new JMenu(attrSet().getStringField(KEY_EDIT) + "(E)");
+			edit = new JMenu(aSet.getStringField(KEY_EDIT) + "(E)");
 			edit.setMnemonic('E');
 			add(edit);
 			
 			//文件菜单的具体内容
 			file.add(new JMenuItemAction.Builder()
-					.name(attrSet().getStringField(KEY_OPENFILE) + "(O)")
-					.description(attrSet().getStringField(KEY_OPENFILE_DES))
+					.name(aSet.getStringField(KEY_OPENFILE) + "(O)")
+					.description(aSet.getStringField(KEY_OPENFILE_DES))
 					.keyStorke(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK))
 					.mnemonic(KeyEvent.VK_O)
 					.listener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							controlPort().openNcFile();
+							controlPort.getFileControlPort().openNcFile();
 						}
 					})
 					.build()
 			);
-			
-			
-			
-			
-			
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.dwarfeng.ncc.view.NccViewObject#getViewManager()
-		 */
-		@Override
-		public NccViewManager getViewManager() {
-			return viewManager;
 		}
 		
 	}
+
+	private class CodeCenter1 extends JPanel{
+		
+		private final JList<CodeLabel> codeLabelList;
+		private final DefaultListModel<CodeLabel> codeLabelModel;
+		private final ListCellRenderer<CodeLabel> codeLabelRender;
+		private final JScrollPane codeLabelScrollPane;
+		private JList<Code> codeList;
+
+		public CodeCenter1() {
+			codeLabelRender = new CodeLabelRenderImpl();
+			
+			GridBagLayout mgr = new GridBagLayout();
+			mgr.columnWidths = new int[]{0,0};
+			mgr.columnWeights = new double[]{0.0,1.0};
+			mgr.rowWeights = new double[]{1.0};
+			setLayout(mgr);
+			
+			GridBagConstraints gbc1 = new GridBagConstraints();
+			gbc1.fill = GridBagConstraints.BOTH;
+			gbc1.gridx = 0;
+			gbc1.gridy = 0;
+			gbc1.insets = new Insets(0, 0, 0, 0);
+			codeLabelScrollPane = new JScrollPane();
+			codeLabelScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			codeLabelScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+			codeLabelScrollPane.setBorder(null);
+			add(codeLabelScrollPane, gbc1);
+			
+			codeLabelList = new JList<CodeLabel>();
+			codeLabelModel = new DefaultListModel<CodeLabel>();
+			codeLabelList.setModel(codeLabelModel);
+			codeLabelList.getScrollableTracksViewportWidth();
+			codeLabelList.setCellRenderer(codeLabelRender);
+			codeLabelScrollPane.setViewportView(codeLabelList);
+			
+			GridBagConstraints gbc2 = new GridBagConstraints();
+			gbc2.fill = GridBagConstraints.BOTH;
+			gbc2.gridx = 1;
+			gbc2.gridy = 0;
+			gbc2.insets = new Insets(0, 0, 0, 0);
+			JScrollPane scrollPane_1 = new JScrollPane();
+			scrollPane_1.setBorder(null);
+			add(scrollPane_1, gbc2);
+			
+			codeList = new JList<Code>();
+			scrollPane_1.setViewportView(codeList);
+			
+		}
+		
+		/*
+		 * .(non-Javadoc)
+		 * @see javax.swing.JComponent#paint(java.awt.Graphics)
+		 */
+		@Override
+		public void paint(Graphics g) {
+			super.paint(g);
+		}
+		
+	}
+	
 
 }
