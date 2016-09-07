@@ -4,32 +4,23 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.InputEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -49,21 +40,17 @@ import javax.swing.filechooser.FileFilter;
 import com.dwarfeng.dfunc.gui.JAdjustableBorderPanel;
 import com.dwarfeng.dfunc.gui.JConsole;
 import com.dwarfeng.dfunc.gui.JMenuItemAction;
-import com.dwarfeng.dfunc.io.CT;
 import com.dwarfeng.dfunc.prog.mvc.AbstractViewManager;
 import com.dwarfeng.ncc.control.NccControlPort;
-import com.dwarfeng.ncc.module.front.Page;
 import com.dwarfeng.ncc.module.nc.Code;
-import com.dwarfeng.ncc.module.nc.CodeLabel;
 import com.dwarfeng.ncc.module.nc.CodeSerial;
 import com.dwarfeng.ncc.program.NccProgramAttrSet;
 import com.dwarfeng.ncc.program.conf.MfAppearConfig;
 import com.dwarfeng.ncc.program.key.StringFieldKey;
-import com.dwarfeng.ncc.view.gui.CodeLabelRenderImpl;
-import com.dwarfeng.ncc.view.gui.CodeRenderImpl;
+import com.dwarfeng.ncc.view.gui.CodeLabelRender;
+import com.dwarfeng.ncc.view.gui.CodeRender;
 import com.dwarfeng.ncc.view.gui.FrameCp;
 import com.dwarfeng.ncc.view.gui.NotifyCp;
-import com.dwarfeng.ncc.view.gui.PageRenderImpl;
 import com.dwarfeng.ncc.view.gui.ProgCp;
 import com.dwarfeng.ncc.view.gui.StatusLabelType;
 
@@ -231,45 +218,16 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 
 			/*
 			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.view.gui.NccFrameControlPort#setCodePages(int)
-			 */
-			@Override
-			public void setCodeTotlePages(int val) {
-				codePageModule.removeAllElements();
-				for(int i = 1 ; i < val + 1 ; i ++){
-					codePageModule.addElement(new Page(i));
-				}
-			}
-
-			/*
-			 * (non-Javadoc)
 			 * @see com.dwarfeng.ncc.view.gui.NccFrameControlPort#showCode(com.dwarfeng.ncc.module.nc.CodeSerial)
 			 */
 			@Override
-			public void showCode(CodeSerial codeSerial, boolean flag) {
+			public void showCode(CodeSerial codeSerial) {
 				codeCenter1.codeLabelModel.removeAllElements();
 				codeCenter1.codeModel.removeAllElements();
 				for(Code code:codeSerial){
 					codeCenter1.codeLabelModel.addElement(code);
 					codeCenter1.codeModel.addElement(code);
 				}
-				if(flag){
-					codeCenter1.backTop();
-				}else{
-					codeCenter1.backEnd();
-				}
-				codeCenter1.fitSize();
-			}
-
-			/*
-			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.view.gui.NccFrameControlPort#setCodePage(com.dwarfeng.ncc.module.front.Page)
-			 */
-			@Override
-			public void setCodePage(Page page) {
-				if(codePageModule.getIndexOf(page) == -1)
-					throw new NoSuchElementException(page.toString());
-				codePage.setSelectedItem(page);
 			}
 
 			/*
@@ -419,11 +377,8 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 		private final JLabel progressLabel;
 		private final JButton progressSuspendButton;
 		private final JProgressBar progressBar;
-		private final DefaultComboBoxModel<Page> codePageModule;
-		private final ListCellRenderer<Page> codePageRender;
 		private final NccMenu menu;
 		private final CodeCenter1 codeCenter1;
-		private final JComboBox<Page> codePage;
 		private final JTabbedPane codeCenterPanel;
 		
 		private boolean modiFlag = false;
@@ -463,93 +418,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			codePanel.setLayout(new BorderLayout(0, 0));
 			
 			JPanel codeNorthPanel = new JPanel();
-			codeNorthPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 			codePanel.add(codeNorthPanel, BorderLayout.NORTH);
-			GridBagLayout gbl_codeNorthPanel = new GridBagLayout();
-			gbl_codeNorthPanel.columnWidths = new int[]{20, 0, 0, 0, 0, 0, 0};
-			gbl_codeNorthPanel.rowHeights = new int[]{32, 32, 0};
-			gbl_codeNorthPanel.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-			gbl_codeNorthPanel.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
-			codeNorthPanel.setLayout(gbl_codeNorthPanel);
-			
-			JButton btnNewButton_3 = new JButton("");
-			btnNewButton_3.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-				}
-			});
-			GridBagConstraints gbc_btnNewButton_3 = new GridBagConstraints();
-			gbc_btnNewButton_3.insets = new Insets(0, 0, 5, 0);
-			gbc_btnNewButton_3.fill = GridBagConstraints.BOTH;
-			gbc_btnNewButton_3.gridx = 5;
-			gbc_btnNewButton_3.gridy = 0;
-			codeNorthPanel.add(btnNewButton_3, gbc_btnNewButton_3);
-			
-			JButton button = new JButton("");
-			GridBagConstraints gbc_button = new GridBagConstraints();
-			gbc_button.insets = new Insets(0, 0, 0, 5);
-			gbc_button.fill = GridBagConstraints.BOTH;
-			gbc_button.gridx = 0;
-			gbc_button.gridy = 1;
-			codeNorthPanel.add(button, gbc_button);
-			
-			JButton btnNewButton_1 = new JButton("");
-			btnNewButton_1.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-				}
-			});
-			GridBagConstraints gbc_btnNewButton_1 = new GridBagConstraints();
-			gbc_btnNewButton_1.insets = new Insets(0, 0, 0, 5);
-			gbc_btnNewButton_1.fill = GridBagConstraints.BOTH;
-			gbc_btnNewButton_1.gridx = 1;
-			gbc_btnNewButton_1.gridy = 1;
-			codeNorthPanel.add(btnNewButton_1, gbc_btnNewButton_1);
-			
-			JButton btnNewButton_2 = new JButton("");
-			btnNewButton_2.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-				}
-			});
-			
-			codePageModule = new DefaultComboBoxModel<Page>();
-			codePageRender = new PageRenderImpl();
-			
-			codePage = new JComboBox<Page>();
-			codePage.setModel(codePageModule);
-			codePage.setRenderer(codePageRender);
-			codePage.addItemListener(new ItemListener() {
-				@Override
-				public void itemStateChanged(ItemEvent e) {
-					if(modiFlag || codePage.getSelectedItem() == null) return;
-					controlPort.toggleCodePage((Page)codePage.getSelectedItem(), true);
-				}
-			});
-			GridBagConstraints gbc_comboBox = new GridBagConstraints();
-			gbc_comboBox.insets = new Insets(0, 0, 0, 5);
-			gbc_comboBox.fill = GridBagConstraints.HORIZONTAL;
-			gbc_comboBox.gridx = 2;
-			gbc_comboBox.gridy = 1;
-			codeNorthPanel.add(codePage, gbc_comboBox);
-			GridBagConstraints gbc_btnNewButton_2 = new GridBagConstraints();
-			gbc_btnNewButton_2.insets = new Insets(0, 0, 0, 5);
-			gbc_btnNewButton_2.fill = GridBagConstraints.BOTH;
-			gbc_btnNewButton_2.gridx = 3;
-			gbc_btnNewButton_2.gridy = 1;
-			codeNorthPanel.add(btnNewButton_2, gbc_btnNewButton_2);
-			
-			JButton button_1 = new JButton("");
-			GridBagConstraints gbc_button_1 = new GridBagConstraints();
-			gbc_button_1.insets = new Insets(0, 0, 0, 5);
-			gbc_button_1.fill = GridBagConstraints.BOTH;
-			gbc_button_1.gridx = 4;
-			gbc_button_1.gridy = 1;
-			codeNorthPanel.add(button_1, gbc_button_1);
-			
-			JButton btnNewButton_4 = new JButton("");
-			GridBagConstraints gbc_btnNewButton_4 = new GridBagConstraints();
-			gbc_btnNewButton_4.fill = GridBagConstraints.BOTH;
-			gbc_btnNewButton_4.gridx = 5;
-			gbc_btnNewButton_4.gridy = 1;
-			codeNorthPanel.add(btnNewButton_4, gbc_btnNewButton_4);
 			
 			JPanel codeSouthPanel = new JPanel();
 			codePanel.add(codeSouthPanel, BorderLayout.SOUTH);
@@ -658,90 +527,35 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			private final JList<Code> codeLabelList;
 			private final DefaultListModel<Code> codeLabelModel;
 			private final ListCellRenderer<Code> codeLabelRender;
-			private final JScrollPane codeLabelScrollPane;
 			private final JList<Code> codeList;
 			private final DefaultListModel<Code> codeModel;
 			private final ListCellRenderer<Code> codeRender;
 			private final JScrollPane codeScrollPane;
-			private final GridBagLayout mgr;
 			
 			public CodeCenter1() {
 				setBackground(Color.WHITE);
-				
-				mgr = new GridBagLayout();
-				mgr.columnWidths = new int[]{0,0};
-				mgr.columnWeights = new double[]{0.0,1.0};
-				mgr.rowWeights = new double[]{1.0};
-				setLayout(mgr);
-				
-				GridBagConstraints gbc1 = new GridBagConstraints();
-				gbc1.fill = GridBagConstraints.BOTH;
-				gbc1.gridx = 0;
-				gbc1.gridy = 0;
-				gbc1.insets = new Insets(0, 0, 0, 0);
-				codeLabelScrollPane = new JScrollPane();
-				codeLabelScrollPane.setBackground(Color.WHITE);
-				codeLabelScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-				codeLabelScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-				codeLabelScrollPane.setBorder(null);
-				add(codeLabelScrollPane, gbc1);
+				setLayout(new BorderLayout());
 				
 				codeLabelList = new JList<Code>();
 				codeLabelModel = new DefaultListModel<Code>();
-				codeLabelRender = new CodeLabelRenderImpl();
+				codeLabelRender = new CodeLabelRender();
 				codeLabelList.setModel(codeLabelModel);
 				codeLabelList.getScrollableTracksViewportWidth();
 				codeLabelList.setCellRenderer(codeLabelRender);
-				codeLabelScrollPane.setViewportView(codeLabelList);
 				
-				GridBagConstraints gbc2 = new GridBagConstraints();
-				gbc2.fill = GridBagConstraints.BOTH;
-				gbc2.gridx = 1;
-				gbc2.gridy = 0;
-				gbc2.insets = new Insets(0, 10, 0, 0);
 				codeScrollPane = new JScrollPane();
 				codeScrollPane.setBackground(Color.WHITE);
 				codeScrollPane.setBorder(null);
-				add(codeScrollPane, gbc2);
+				add(codeScrollPane, BorderLayout.CENTER);
 				
 				codeList = new JList<Code>();
 				codeModel = new DefaultListModel<Code>();
-				codeRender = new CodeRenderImpl();
+				codeRender = new CodeRender();
 				codeList.setModel(codeModel);
 				codeList.setCellRenderer(codeRender);
 				codeScrollPane.setViewportView(codeList);
+				codeScrollPane.setRowHeaderView(codeLabelList);
 				
-				codeScrollPane.getViewport().addChangeListener(new ChangeListener() {
-					
-					@Override
-					public void stateChanged(ChangeEvent e) {
-						if(modiFlag) return;
-						codeLabelScrollPane.getViewport().setViewPosition(
-								new Point(0, codeScrollPane.getViewport().getViewPosition().y));
-					}
-				});
-				
-			}
-			
-			private void fitSize(){
-				int codeLabelScrollPaneWidth = getGraphics().getFontMetrics().stringWidth(
-						codeLabelModel.get(codeLabelModel.size() - 1).getLabel().getLineIndex() + "");
-				codeLabelScrollPane.setPreferredSize(new Dimension(codeLabelScrollPaneWidth,0));
-				mgr.columnWidths = new int[]{codeLabelScrollPaneWidth , 0};
-				revalidate();
-			}
-			
-			private void backTop(){
-				codeLabelScrollPane.getViewport().setViewPosition(new Point());
-				codeScrollPane.getViewport().setViewPosition(new Point());
-			}
-			
-			private void backEnd(){
-				int end;
-				int viewHeight = codeScrollPane.getViewport().getViewRect().height;
-				end = codeScrollPane.getViewport().getView().getPreferredSize().height - viewHeight;
-				codeScrollPane.getViewport().setViewPosition(new Point(0, end));
-				codeLabelScrollPane.getViewport().setViewPosition(new Point(0, end));
 			}
 			
 		}

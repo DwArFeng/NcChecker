@@ -1,8 +1,5 @@
 package com.dwarfeng.ncc.view.gui;
 
-import java.util.NoSuchElementException;
-
-import com.dwarfeng.ncc.module.front.Page;
 import com.dwarfeng.ncc.module.nc.CodeSerial;
 import com.dwarfeng.ncc.program.conf.MfAppearConfig;
 
@@ -44,19 +41,6 @@ public interface FrameCp {
 	public MfAppearConfig getAppearanceConfig();
 	
 	/**
-	 * 设置代码的当前页数。
-	 * @param page 代码的当前页数。
-	 * @throws NoSuchElementException 指定的页数不存在。
-	 */
-	public void setCodePage(Page page);
-	
-	/**
-	 * 设置代码的总页数。
-	 * @param val 代码的总页数。
-	 */
-	public void setCodeTotlePages(int val);
-	
-	/**
 	 * 设置状态标签上的文本。
 	 * @param message 状态标签上的文本。
 	 * @param type 文本的类型。
@@ -74,9 +58,9 @@ public interface FrameCp {
 	/**
 	 * 显示指定的代码序列。
 	 * @param codeSerial 显示指定的代码序列。
-	 * @param flag 为 <code>true</code>时显示代码顶部，为 <code>false</code>时返回代码底部。
+	 * @throws NullPointerException 入口参数为 <code>null</code>。
 	 */
-	public void showCode(CodeSerial codeSerial, boolean flag);
+	public void showCode(CodeSerial codeSerial);
 	
 	/**
 	 * 设置控制台的输出文本。

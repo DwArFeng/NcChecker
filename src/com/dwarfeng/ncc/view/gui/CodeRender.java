@@ -2,20 +2,33 @@ package com.dwarfeng.ncc.view.gui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Insets;
 import java.awt.Rectangle;
 
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.border.EmptyBorder;
 
 import sun.swing.DefaultLookup;
 
 import com.dwarfeng.ncc.module.nc.Code;
 
-public class CodeRenderImpl extends JLabel implements ListCellRenderer<Code> {
+/**
+ * 代码渲染类。
+ * @author DwArFeng
+ * @since 1.8
+ */
+public class CodeRender extends JLabel implements ListCellRenderer<Code> {
 
-	public CodeRenderImpl() {
+	private static final long serialVersionUID = -1460053000339852911L;
+
+	/**
+	 * 生成一个代码渲染类。
+	 */
+	public CodeRender() {
 		setOpaque(true);
+		setBorder(new EmptyBorder(new Insets(0, 5, 0, 0)));
 	}
 	
 	/**

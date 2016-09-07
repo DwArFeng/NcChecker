@@ -49,19 +49,10 @@ public interface FrontCp{
 	public boolean hasFrontCode();
 	
 	/**
-	 * 返回前台代码的总共页数。
-	 * @return 前台代码的总共页数。
-	 * @throws NullPointerException 当前台代码不存在时。
-	 */
-	public int getFrontCodePage();
-	
-	/**
-	 * 获取某一页的代码。
-	 * @param page 指定的页码。
+	 * 获取当前的代码。
 	 * @return 对应的代码。
 	 * @throws NullPointerException 前台代码不存在。
-	 * @throws IndexOutOfBoundsException 页码超出范围。
 	 */
-	public CodeSerial getCodeSerial(Page page); 
+	public CodeSerial getCodeSerial(); 
 
 }

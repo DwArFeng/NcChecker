@@ -18,7 +18,6 @@ import com.dwarfeng.dfunc.prog.mvc.AbstractControlManager;
 import com.dwarfeng.ncc.module.NccModuleControlPort;
 import com.dwarfeng.ncc.module.expl.CodeLoader;
 import com.dwarfeng.ncc.module.expl.ExplCp;
-import com.dwarfeng.ncc.module.front.Page;
 import com.dwarfeng.ncc.module.nc.ArrayCodeList;
 import com.dwarfeng.ncc.module.nc.Code;
 import com.dwarfeng.ncc.module.nc.CodeSerial;
@@ -129,11 +128,8 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 							
 							CodeSerial codeList = new ArrayCodeList(codes.toArray(new Code[0]));
 							moduleControlPort.frontCp().setFrontCodeSerial(codeList);
-							viewControlPort.frameCp().setCodeTotlePages(moduleControlPort.frontCp().getFrontCodePage());
 							
-							viewControlPort.frameCp().showCode(moduleControlPort.frontCp().getCodeSerial(Page.PAGE_ONE), true);
-							viewControlPort.frameCp().setCodePage(Page.PAGE_ONE);
-							
+							viewControlPort.frameCp().showCode(moduleControlPort.frontCp().getCodeSerial());
 						}catch(Exception e){
 							e.printStackTrace();
 							return;
@@ -202,24 +198,6 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 			//输出就绪文本
 			mainFrameControlPort.setStatusLabelMessage(programAttrSet.getStringField(KEY_GETREADY), StatusLabelType.NORMAL);
 			mainFrameControlPort.traceInConsole(DwarfFunction.getWelcomeString());
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.dwarfeng.ncc.control.NccControlPort#codePageChange(com.dwarfeng.ncc.module.front.Page)
-		 */
-		@Override
-		public void toggleCodePage(Page page, boolean flag) {
-			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
-			if(!moduleControlPort.frontCp().hasFrontCode())
-				throw new IllegalStateException("为何会在没有前端代码的情况下调用这个方法？");
-			viewControlPort.frameCp().setModiFlag(true);
-			try{
-				viewControlPort.frameCp().showCode(moduleControlPort.frontCp().getCodeSerial(page), flag);
-				viewControlPort.frameCp().setCodePage(page);
-			}finally{
-				viewControlPort.frameCp().setModiFlag(false);
-			}
 		}
 		
 	};

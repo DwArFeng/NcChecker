@@ -1,34 +1,37 @@
 package com.dwarfeng.ncc.view.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Rectangle;
+import java.awt.Insets;
 
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+import javax.swing.border.EmptyBorder;
 
 import com.dwarfeng.ncc.module.nc.Code;
-import com.dwarfeng.ncc.module.nc.CodeLabel;
 
 /**
  * 代码标签的渲染类。
  * @author DwArFeng
  * @since 1.8
  */
-public final class CodeLabelRenderImpl extends JPanel implements ListCellRenderer<Code> {
+public final class CodeLabelRender extends JPanel implements ListCellRenderer<Code> {
 	
 	private static final long serialVersionUID = 1163394929476733457L;
 	
 	private final JLabel lineNumber;
 	
-	public CodeLabelRenderImpl() {
+	/**
+	 * 生成一个默认的代码标签渲染类。
+	 */
+	public CodeLabelRender() {
 		setLayout(new BorderLayout());
 		lineNumber = new JLabel();
 		lineNumber.setHorizontalAlignment(JLabel.RIGHT);
 		add(lineNumber,BorderLayout.CENTER);
+		setBorder(new EmptyBorder(new Insets(0, 0, 0, 5)));
 	}
 	
 	/**

@@ -11,13 +11,9 @@ public final class FrontConfig {
 	
 	/**默认值*/
 	public static final FrontConfig DEFAULT = 
-			new FrontConfig(10000);
+			new FrontConfig();
 	
-	private final int codesInPage;
-	
-	
-	private FrontConfig(int codesInPage) {
-		this.codesInPage = codesInPage;
+	private FrontConfig() {
 	}
 	
 	/**
@@ -27,22 +23,10 @@ public final class FrontConfig {
 	 */
 	public static class Builder implements Buildable<FrontConfig>{
 
-		private int codesInPage = DEFAULT.codesInPage; 
-		
 		/**
 		 * 生成默认的前端配置构造器。
 		 */
 		public Builder() {}
-		
-		/**
-		 * 设置一页中有多少行代码。
-		 * @param val 值。
-		 * @return 构造器自身。
-		 */
-		public Builder condesInPage(int val){
-			this.codesInPage = val;
-			return this;
-		}
 		
 		/*
 		 * (non-Javadoc)
@@ -54,14 +38,6 @@ public final class FrontConfig {
 			return null;
 		}
 		
-	}
-	
-	/**
-	 * 返回一页中的代码行数。
-	 * @return 一页中的代码行数。
-	 */
-	public int getCodesInPage(){
-		return codesInPage;
 	}
 
 }

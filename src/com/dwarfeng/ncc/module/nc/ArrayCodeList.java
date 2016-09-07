@@ -5,8 +5,6 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-import com.dwarfeng.dfunc.io.CT;
-
 /**
  * 利用数组实现的NC代码列表。
  * @author DwArFeng

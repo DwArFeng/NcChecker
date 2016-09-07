@@ -8,9 +8,6 @@ import com.dwarfeng.ncc.module.expl.CodeLoader;
 import com.dwarfeng.ncc.module.expl.ExplCp;
 import com.dwarfeng.ncc.module.expl.ScannerCodeLoader;
 import com.dwarfeng.ncc.module.front.FrontCp;
-import com.dwarfeng.ncc.module.front.Page;
-import com.dwarfeng.ncc.module.nc.ArrayCodeList;
-import com.dwarfeng.ncc.module.nc.Code;
 import com.dwarfeng.ncc.module.nc.CodeSerial;
 import com.dwarfeng.ncc.program.NccProgramAttrSet;
 import com.dwarfeng.ncc.program.conf.FrontConfig;
@@ -85,6 +82,9 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 		
 		private final FrontCp frontModuleControlPort = new FrontCp() {
 			
+			private CodeSerial frontCodeSerial;
+			private int codesInPage;
+			
 			/*
 			 * (non-Javadoc)
 			 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#setFrontCodeSerial(com.dwarfeng.ncc.module.nc.CodeSerial)
@@ -109,7 +109,7 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 			 */
 			@Override
 			public void applyFontConfig(FrontConfig config) {
-				FrontModule.this.codesInPage = config.getCodesInPage();
+				
 			}
 
 			/*
@@ -119,18 +119,7 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 			@Override
 			public FrontConfig getFontConfig() {
 				return new FrontConfig.Builder()
-						.condesInPage(codesInPage)
 						.build();
-			}
-
-			/*
-			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#getFrontCodePage()
-			 */
-			@Override
-			public int getFrontCodePage() {
-				Objects.requireNonNull(frontCodeSerial);
-				return frontCodeSerial.getTotle()/codesInPage + 1;
 			}
 
 			/*
@@ -147,11 +136,8 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 			 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#getCodeSerial(com.dwarfeng.ncc.module.front.Page)
 			 */
 			@Override
-			public CodeSerial getCodeSerial(Page page) {
-				Objects.requireNonNull(frontCodeSerial);
-				int endLine = Math.min(frontCodeSerial.getMaxLineNumber(), codesInPage * page.getVal());
-				Code[] codes = frontCodeSerial.toArray(codesInPage * (page.getVal() - 1) + 1, endLine);
-				return new ArrayCodeList(codes);
+			public CodeSerial getCodeSerial() {
+				return frontCodeSerial;
 			}
 
 			/*
@@ -166,17 +152,10 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 			
 		};
 		
-		
-		
-		
-		
-		private CodeSerial frontCodeSerial;
-		private int codesInPage;
-		
-		
 		public FrontModule() {}
 		
 	}
+	
 	
 	
 	
