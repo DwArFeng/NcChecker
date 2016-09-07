@@ -17,18 +17,20 @@ import com.dwarfeng.dfunc.DwarfFunction;
 import com.dwarfeng.dfunc.prog.mvc.AbstractControlManager;
 import com.dwarfeng.ncc.module.NccModuleControlPort;
 import com.dwarfeng.ncc.module.expl.CodeLoader;
-import com.dwarfeng.ncc.module.expl.ExplControlPort;
+import com.dwarfeng.ncc.module.expl.ExplCp;
+import com.dwarfeng.ncc.module.front.Page;
 import com.dwarfeng.ncc.module.nc.ArrayCodeList;
 import com.dwarfeng.ncc.module.nc.Code;
 import com.dwarfeng.ncc.module.nc.CodeSerial;
 import com.dwarfeng.ncc.program.NccProgramAttrSet;
 import com.dwarfeng.ncc.program.NccProgramControlPort;
+import com.dwarfeng.ncc.program.conf.FrontConfig;
 import com.dwarfeng.ncc.program.conf.MfAppearConfig;
 import com.dwarfeng.ncc.program.key.StringFieldKey;
 import com.dwarfeng.ncc.view.NccViewControlPort;
-import com.dwarfeng.ncc.view.gui.NccFrameControlPort;
-import com.dwarfeng.ncc.view.gui.NotifyControlPort;
-import com.dwarfeng.ncc.view.gui.ProgressMonitor;
+import com.dwarfeng.ncc.view.gui.FrameCp;
+import com.dwarfeng.ncc.view.gui.NotifyCp;
+import com.dwarfeng.ncc.view.gui.ProgCp;
 import com.dwarfeng.ncc.view.gui.StatusLabelType;
 
 /**
@@ -56,40 +58,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 		 * (non-Javadoc)
 		 * @see com.dwarfeng.ncc.control.NccControlPort#startProgram()
 		 */
-		@Override
-		public void startProgram() {
-			if(startFlag) throw new IllegalStateException(KEY_INITED);
-			startFlag = true;
-			
-			//由于界面支持该外观，所以不可能抛出异常。
-			try {
-				UIManager.setLookAndFeel(new NimbusLookAndFeel());
-			} catch (UnsupportedLookAndFeelException e) {}
-			
-			//各控制站点初始化
-			programControlPort.init();
-			moduleControlPort.init();
-			viewControlPort.init();
-			
-			//读取配置文件
-			MfAppearConfig mfac = null;
-			try {
-				mfac = programControlPort.getConfigControlPort().loadMainFrameAppearConfig();
-			} catch (NumberFormatException e) {
-				mfac = MfAppearConfig.DEFAULT_CONFIG;
-			} catch (IOException e) {
-				mfac = MfAppearConfig.DEFAULT_CONFIG;
-			}
-			
-			//显示程序主界面
-			final NccFrameControlPort mainFrameControlPort = viewControlPort.getMainFrameControlPort();
-			mainFrameControlPort.applyAppearance(mfac);
-			mainFrameControlPort.setVisible(true);
-			
-			//输出就绪文本
-			mainFrameControlPort.setStatusLabelMessage(programAttrSet.getStringField(KEY_GETREADY), StatusLabelType.NORMAL);
-			mainFrameControlPort.traceInConsole(DwarfFunction.getWelcomeString());
-		}
+
 		
 		/*
 		 * (non-Javadoc)
@@ -100,12 +69,12 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
 			
 			//隐藏界面
-			viewControlPort.getMainFrameControlPort().setVisible(false);
+			viewControlPort.frameCp().setVisible(false);
 			
 			//保存各种配置
-			MfAppearConfig config = viewControlPort.getMainFrameControlPort().getCurrentAppearance();
+			MfAppearConfig config = viewControlPort.frameCp().getAppearanceConfig();
 			try {
-				programControlPort.getConfigControlPort().saveMainFrameAppearConfig(config);
+				programControlPort.configCp().saveMainFrameAppearConfig(config);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -116,24 +85,15 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 			System.exit(0);
 			
 		}
-
+		
 		/*
 		 * (non-Javadoc)
-		 * @see com.dwarfeng.ncc.control.NccControlPort#getFileControlPort()
+		 * @see com.dwarfeng.ncc.control.NccControlPort#openNcFile()
 		 */
-		@Override
-		public FileControlPort getFileControlPort() {
-			return fileControlPort;
-		}
-		
-	};
-	
-	private final FileControlPort fileControlPort = new FileControlPort() {
-		
 		@Override
 		public void openNcFile() {
 			final NccProgramAttrSet attrSet = programAttrSet;
-			final NotifyControlPort notifyControlPort = getViewControlPort().getNotifyControlPort();
+			final NotifyCp notifyControlPort = getViewControlPort().notifyCp();
 			final boolean aFlag = true;
 			final FileFilter[] fileFilters = new FileFilter[]{
 				new FileNameExtensionFilter(attrSet.getStringField(StringFieldKey.CTRL_TEXTFILE), "txt"),
@@ -141,9 +101,10 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 			};
 			final File file = notifyControlPort.askFile(fileFilters, aFlag);
 			if(file == null) return;
-			final ProgressMonitor progressMonitor = viewControlPort.getProgressMonitor();
-			final ExplControlPort explMoudleControlPort = moduleControlPort.getExplMoudleControlPort();
+			final ProgCp progressMonitor = viewControlPort.progCp();
+			final ExplCp explMoudleControlPort = moduleControlPort.explCp();
 			InputStream in = null;
+			viewControlPort.frameCp().lockEdit();
 			try{
 				in = new FileInputStream(file);
 				final CodeLoader codeLoader = explMoudleControlPort.newNcCodeLoader(in);
@@ -167,14 +128,17 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 							}
 							
 							CodeSerial codeList = new ArrayCodeList(codes.toArray(new Code[0]));
-							moduleControlPort.getFrontModuleControlPort()
-									.setFrontCodeSerial(codeList);
-							//TODO 读取之后的方法
+							moduleControlPort.frontCp().setFrontCodeSerial(codeList);
+							viewControlPort.frameCp().setCodeTotlePages(moduleControlPort.frontCp().getFrontCodePage());
+							
+							viewControlPort.frameCp().showCode(moduleControlPort.frontCp().getCodeSerial(Page.PAGE_ONE), true);
+							viewControlPort.frameCp().setCodePage(Page.PAGE_ONE);
 							
 						}catch(Exception e){
 							e.printStackTrace();
 							return;
 						}finally{
+							viewControlPort.frameCp().unlockEdit();
 							progressMonitor.endMonitor();
 							try {
 								codeLoader.close();
@@ -194,8 +158,71 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 			
 			
 		}
+		
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.control.NccControlPort#startProgram()
+		 */
+		@Override
+		public void startProgram() {
+			if(startFlag) throw new IllegalStateException(KEY_INITED);
+			startFlag = true;
+			
+			//由于界面支持该外观，所以不可能抛出异常。
+			try {
+				UIManager.setLookAndFeel(new NimbusLookAndFeel());
+			} catch (UnsupportedLookAndFeelException e) {}
+			
+			//各控制站点初始化
+			programControlPort.init();
+			moduleControlPort.init();
+			viewControlPort.init();
+			
+			//读取配置文件
+			MfAppearConfig mfac = null;
+			try {
+				mfac = programControlPort.configCp().loadMainFrameAppearConfig();
+			} catch (NumberFormatException e) {
+				mfac = MfAppearConfig.DEFAULT_CONFIG;
+			} catch (IOException e) {
+				mfac = MfAppearConfig.DEFAULT_CONFIG;
+			}
+			//TODO 设置为读取式。
+			FrontConfig fc = FrontConfig.DEFAULT;
+			
+			//各个管理器初始化参数
+			moduleControlPort.frontCp().applyFontConfig(fc);
+			
+			
+			//显示程序主界面
+			final FrameCp mainFrameControlPort = viewControlPort.frameCp();
+			mainFrameControlPort.applyAppearanceConfig(mfac);
+			mainFrameControlPort.setVisible(true);
+			
+			//输出就绪文本
+			mainFrameControlPort.setStatusLabelMessage(programAttrSet.getStringField(KEY_GETREADY), StatusLabelType.NORMAL);
+			mainFrameControlPort.traceInConsole(DwarfFunction.getWelcomeString());
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.control.NccControlPort#codePageChange(com.dwarfeng.ncc.module.front.Page)
+		 */
+		@Override
+		public void toggleCodePage(Page page, boolean flag) {
+			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
+			if(!moduleControlPort.frontCp().hasFrontCode())
+				throw new IllegalStateException("为何会在没有前端代码的情况下调用这个方法？");
+			viewControlPort.frameCp().setModiFlag(true);
+			try{
+				viewControlPort.frameCp().showCode(moduleControlPort.frontCp().getCodeSerial(page), flag);
+				viewControlPort.frameCp().setCodePage(page);
+			}finally{
+				viewControlPort.frameCp().setModiFlag(false);
+			}
+		}
+		
 	};
-	
 	
 	
 	

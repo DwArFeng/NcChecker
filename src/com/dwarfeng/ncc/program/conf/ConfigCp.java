@@ -7,7 +7,7 @@ import java.io.IOException;
  * @author DwArFeng
  * @since 1.8
  */
-public interface ConfigControlPort {
+public interface ConfigCp {
 	
 	/**
 	 * 保存指定的外观设置。
@@ -31,7 +31,7 @@ public interface ConfigControlPort {
 	 * @throws IOException IO异常。
 	 * @throws NullPointerException 入口参数为 <code>null</code>。
 	 */
-	public void saveFrontModuleConfig(FrontModuleConfig config) throws IOException;
+	public void saveFrontModuleConfig(FrontConfig config) throws IOException;
 	
 	/**
 	 * 获取配置文件的前端配置。
@@ -39,6 +39,6 @@ public interface ConfigControlPort {
 	 * @throws IOException IO异常。
 	 * @throws NumberFormatException 数字格式异常：在配置文件被外部更改破坏时可能会抛出。
 	 */
-	public FrontModuleConfig loadFrontModuleConfig()throws IOException, NumberFormatException;
+	public FrontConfig loadFrontModuleConfig()throws IOException, NumberFormatException;
 
 }

@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+import com.dwarfeng.dfunc.io.CT;
+
 /**
  * 利用数组实现的NC代码列表。
  * @author DwArFeng
@@ -38,7 +40,7 @@ public final class ArrayCodeList implements CodeSerial {
 	 */
 	@Override
 	public Code getCode(int lineIndex) {
-		if(lineIndex > getMaxLineNumber() || lineIndex < getMinLineNumber()) 
+		if(lineIndex > getMaxLineNumber() || lineIndex < getMinLineNumber())
 			throw new NoSuchElementException();
 		return codeArray[lineIndex - getMinLineNumber()];
 	}
@@ -86,7 +88,7 @@ public final class ArrayCodeList implements CodeSerial {
 			@Override
 			public Code next() {
 				if(index >= getTotle()) throw new NoSuchElementException();
-				return getCode(index++);
+				return codeArray[index++];
 			}
 			
 		};
@@ -112,12 +114,28 @@ public final class ArrayCodeList implements CodeSerial {
 
 	/*
 	 * (non-Javadoc)
+	 * @see com.dwarfeng.ncc.module.nc.CodeSerial#toArray(int, int)
+	 */
+	@Override
+	public Code[] toArray(int start, int end) {
+		if(start > end) throw new IndexOutOfBoundsException();
+		if(getMinLineNumber() > start) throw new IndexOutOfBoundsException();
+		if(getMaxLineNumber() < end) throw new IndexOutOfBoundsException();
+		Code[] codes = new Code[end - start + 1];
+		for(int i = 0 ; i < codes.length ; i ++){
+			codes[i] = getCode(start + i);
+		}
+		return codes;
+	}
+	
+	/*
+	 * (non-Javadoc)
 	 * @see com.dwarfeng.ncc.module.nc.CodeSerial#getMaxLineNumber()
 	 */
 	@Override
 	public int getMaxLineNumber() {
 		if(this.codeArray.length == 0) return -1;
-		return codeArray[0].getLabel().getLineIndex();
+		return codeArray[codeArray.length - 1].getLabel().getLineIndex();
 	}
 
 	/*
@@ -127,6 +145,7 @@ public final class ArrayCodeList implements CodeSerial {
 	@Override
 	public int getMinLineNumber() {
 		if(this.codeArray.length == 0) return -1;
-		return codeArray[codeArray.length - 1].getLabel().getLineIndex();
+		return codeArray[0].getLabel().getLineIndex();
 	}
+
 }

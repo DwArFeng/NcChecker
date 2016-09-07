@@ -1,7 +1,7 @@
 package com.dwarfeng.ncc.program;
 
 import com.dwarfeng.dfunc.prog.mvc.ProgramControlPort;
-import com.dwarfeng.ncc.program.conf.ConfigControlPort;
+import com.dwarfeng.ncc.program.conf.ConfigCp;
 
 /**
  * 数控代码验证程序中的程序控制集合。
@@ -28,6 +28,6 @@ public interface NccProgramControlPort extends ProgramControlPort{
 	 * @return 配置控制站。
 	 * @throws IllegalStateException 程序管理器没有初始化。
 	 */
-	public ConfigControlPort getConfigControlPort();
+	public ConfigCp configCp();
 	
 }

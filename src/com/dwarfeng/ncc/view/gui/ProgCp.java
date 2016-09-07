@@ -5,7 +5,7 @@ package com.dwarfeng.ncc.view.gui;
  * @author DwArFeng
  * @since 1.8
  */
-public interface ProgressMonitor{
+public interface ProgCp{
 
 	/**
 	 * 开始对进度进行监视。
@@ -42,7 +42,7 @@ public interface ProgressMonitor{
 	
 	/**
 	 * 该工作是否被人为终止。
-	 * <p> 该方法需要与 {@link ProgressMonitor#suspend()}保持同步。
+	 * <p> 该方法需要与 {@link ProgCp#suspend()}保持同步。
 	 * @return 是否被人为终止。
 	 * @throws IllegalStateException 在停止监视的期间调用。
 	 */
@@ -50,7 +50,7 @@ public interface ProgressMonitor{
 	
 	/**
 	 * 人为终止该工作。
-	 * <p> 该方法需要与 {@link ProgressMonitor#isSuspend()}保持同步。
+	 * <p> 该方法需要与 {@link ProgCp#isSuspend()}保持同步。
 	 * @throws IllegalStateException 在停止监视的期间调用。
 	 */
 	public void suspend();

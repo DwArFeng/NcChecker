@@ -13,8 +13,8 @@ import java.util.ResourceBundle;
 import com.dwarfeng.dfunc.io.FileFunction;
 import com.dwarfeng.dfunc.prog.mvc.AbstractProgramManager;
 import com.dwarfeng.dfunc.threads.RunnerQueue;
-import com.dwarfeng.ncc.program.conf.ConfigControlPort;
-import com.dwarfeng.ncc.program.conf.FrontModuleConfig;
+import com.dwarfeng.ncc.program.conf.ConfigCp;
+import com.dwarfeng.ncc.program.conf.FrontConfig;
 import com.dwarfeng.ncc.program.conf.MfAppearConfig;
 import com.dwarfeng.ncc.program.key.ExceptionFieldKey;
 import com.dwarfeng.ncc.program.key.StringFieldKey;
@@ -75,7 +75,7 @@ public final class NccProgramManager extends AbstractProgramManager<NccProgramCo
 		 * @see com.dwarfeng.ncc.program.NccProgramControlPort#getConfigControlPort()
 		 */
 		@Override
-		public ConfigControlPort getConfigControlPort() {
+		public ConfigCp configCp() {
 			if(!initFlag) throw new IllegalStateException(KEY_NOTINIT);
 			return configControlPort;
 		}
@@ -108,7 +108,7 @@ public final class NccProgramManager extends AbstractProgramManager<NccProgramCo
 		
 	};
 	
-	private final ConfigControlPort configControlPort = new ConfigControlPort() {
+	private final ConfigCp configControlPort = new ConfigCp() {
 		
 		/*
 		 * (non-Javadoc)
@@ -189,7 +189,7 @@ public final class NccProgramManager extends AbstractProgramManager<NccProgramCo
 		 * @see com.dwarfeng.ncc.program.conf.ConfigControlPort#saveFrontModuleConfig(com.dwarfeng.ncc.program.conf.FrontModuleConfig)
 		 */
 		@Override
-		public void saveFrontModuleConfig(FrontModuleConfig config)throws IOException {
+		public void saveFrontModuleConfig(FrontConfig config)throws IOException {
 			// TODO Auto-generated method stub
 			
 		}
@@ -199,7 +199,7 @@ public final class NccProgramManager extends AbstractProgramManager<NccProgramCo
 		 * @see com.dwarfeng.ncc.program.conf.ConfigControlPort#loadFrontModuleConfig()
 		 */
 		@Override
-		public FrontModuleConfig loadFrontModuleConfig() throws IOException, NumberFormatException {
+		public FrontConfig loadFrontModuleConfig() throws IOException, NumberFormatException {
 			// TODO Auto-generated method stub
 			return null;
 		}

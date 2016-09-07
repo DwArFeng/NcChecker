@@ -1,14 +1,19 @@
 package com.dwarfeng.ncc.module;
 
 import java.io.InputStream;
+import java.util.Objects;
 
 import com.dwarfeng.dfunc.prog.mvc.AbstractModuleManager;
 import com.dwarfeng.ncc.module.expl.CodeLoader;
-import com.dwarfeng.ncc.module.expl.ExplControlPort;
+import com.dwarfeng.ncc.module.expl.ExplCp;
 import com.dwarfeng.ncc.module.expl.ScannerCodeLoader;
-import com.dwarfeng.ncc.module.front.FrontModuleControlPort;
+import com.dwarfeng.ncc.module.front.FrontCp;
+import com.dwarfeng.ncc.module.front.Page;
+import com.dwarfeng.ncc.module.nc.ArrayCodeList;
+import com.dwarfeng.ncc.module.nc.Code;
 import com.dwarfeng.ncc.module.nc.CodeSerial;
 import com.dwarfeng.ncc.program.NccProgramAttrSet;
+import com.dwarfeng.ncc.program.conf.FrontConfig;
 
 /**
  * 数控代码验证程序中的模型控制器，可提供模型控制端口。
@@ -36,6 +41,7 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 		public void init() {
 			if(initFlag) throw new IllegalStateException(KEY_INITED);
 			initFlag = true;
+			frontModule = new FrontModule();
 		}
 
 		/*
@@ -43,9 +49,9 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 		 * @see com.dwarfeng.ncc.module.NccModuleControlPort#getFrontModuleControlPort()
 		 */
 		@Override
-		public FrontModuleControlPort getFrontModuleControlPort() {
+		public FrontCp frontCp() {
 			if(!initFlag) throw new IllegalStateException(KEY_NOTINIT);
-			return frontModuleControlPort;
+			return frontModule.frontModuleControlPort;
 		}
 
 		/*
@@ -53,7 +59,7 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 		 * @see com.dwarfeng.ncc.module.NccModuleControlPort#getExplMoudleControlPort()
 		 */
 		@Override
-		public ExplControlPort getExplMoudleControlPort() {
+		public ExplCp explCp() {
 			if(!initFlag) throw new IllegalStateException(KEY_NOTINIT);
 			return explControlPort;
 		}
@@ -61,7 +67,7 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 		
 	};
 	
-	private final ExplControlPort explControlPort = new ExplControlPort() {
+	private final ExplCp explControlPort = new ExplCp() {
 		
 		/*
 		 * (non-Javadoc)
@@ -73,29 +79,104 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 		}
 	};
 	
-	private CodeSerial frontCodeSerial;
+	private FrontModule frontModule;
 	
-	private final FrontModuleControlPort frontModuleControlPort = new FrontModuleControlPort() {
+	private class FrontModule{
 		
-		/*
-		 * (non-Javadoc)
-		 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#setFrontCodeSerial(com.dwarfeng.ncc.module.nc.CodeSerial)
-		 */
-		@Override
-		public void setFrontCodeSerial(CodeSerial codeSerial) {
-			frontCodeSerial = codeSerial;
-		}
+		private final FrontCp frontModuleControlPort = new FrontCp() {
+			
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#setFrontCodeSerial(com.dwarfeng.ncc.module.nc.CodeSerial)
+			 */
+			@Override
+			public void setFrontCodeSerial(CodeSerial codeSerial) {
+				frontCodeSerial = codeSerial;
+			}
+			
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#getFrontCodeSerial()
+			 */
+			@Override
+			public CodeSerial getFrontCodeSerial() {
+				return frontCodeSerial;
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#applyFontConfig(com.dwarfeng.ncc.program.conf.FrontConfig)
+			 */
+			@Override
+			public void applyFontConfig(FrontConfig config) {
+				FrontModule.this.codesInPage = config.getCodesInPage();
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#getFontConfig()
+			 */
+			@Override
+			public FrontConfig getFontConfig() {
+				return new FrontConfig.Builder()
+						.condesInPage(codesInPage)
+						.build();
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#getFrontCodePage()
+			 */
+			@Override
+			public int getFrontCodePage() {
+				Objects.requireNonNull(frontCodeSerial);
+				return frontCodeSerial.getTotle()/codesInPage + 1;
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#hasFrontCode()
+			 */
+			@Override
+			public boolean hasFrontCode() {
+				return frontCodeSerial != null;
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#getCodeSerial(com.dwarfeng.ncc.module.front.Page)
+			 */
+			@Override
+			public CodeSerial getCodeSerial(Page page) {
+				Objects.requireNonNull(frontCodeSerial);
+				int endLine = Math.min(frontCodeSerial.getMaxLineNumber(), codesInPage * page.getVal());
+				Code[] codes = frontCodeSerial.toArray(codesInPage * (page.getVal() - 1) + 1, endLine);
+				return new ArrayCodeList(codes);
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.module.front.FrontCp#overwriteCodeSerial(com.dwarfeng.ncc.module.nc.CodeSerial)
+			 */
+			@Override
+			public void overwriteCodeSerial(CodeSerial codeSerial) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		};
 		
-		/*
-		 * (non-Javadoc)
-		 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#getFrontCodeSerial()
-		 */
-		@Override
-		public CodeSerial getFrontCodeSerial() {
-			return frontCodeSerial;
-		}
-	};
-	
+		
+		
+		
+		
+		private CodeSerial frontCodeSerial;
+		private int codesInPage;
+		
+		
+		public FrontModule() {}
+		
+	}
 	
 	
 	

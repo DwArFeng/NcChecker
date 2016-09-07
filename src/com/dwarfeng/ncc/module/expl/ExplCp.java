@@ -7,7 +7,7 @@ import java.io.InputStream;
  * @author DwArFeng
  * @since 1.8
  */
-public interface ExplControlPort{
+public interface ExplCp{
 
 	/**
 	 * 获取一个针对指定输入流的新的 {@link CodeLoader}。

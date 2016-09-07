@@ -9,7 +9,7 @@ import javax.swing.filechooser.FileFilter;
  * @author DwArFeng
  * @since 1.8
  */
-public interface NotifyControlPort{
+public interface NotifyCp{
 
 	/**
 	 * 向用户询问一个文件。

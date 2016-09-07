@@ -1,8 +1,8 @@
 package com.dwarfeng.ncc.module;
 
 import com.dwarfeng.dfunc.prog.mvc.ModuleControlPort;
-import com.dwarfeng.ncc.module.expl.ExplControlPort;
-import com.dwarfeng.ncc.module.front.FrontModuleControlPort;
+import com.dwarfeng.ncc.module.expl.ExplCp;
+import com.dwarfeng.ncc.module.front.FrontCp;
 
 /**
  * 数控代码验证程序中的模型控制端口。
@@ -22,13 +22,13 @@ public interface NccModuleControlPort extends ModuleControlPort {
 	 * @return 前台模型控制站。
 	 * @throws IllegalStateException 模型管理器还未初始化。
 	 */
-	public FrontModuleControlPort getFrontModuleControlPort();
+	public FrontCp frontCp();
 	
 	/**
 	 * 获取解释模型控制站。
 	 * @return 解释模型控制站。
 	 * @throws IllegalStateException 模型管理器还未初始化。
 	 */
-	public ExplControlPort getExplMoudleControlPort();
+	public ExplCp explCp();
 
 }

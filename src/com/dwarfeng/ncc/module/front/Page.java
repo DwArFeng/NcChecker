@@ -6,6 +6,9 @@ package com.dwarfeng.ncc.module.front;
  * @since 1.8
  */
 public final class Page{
+	
+	/**µÚÒ»Ò³*/
+	public static final Page PAGE_ONE = new Page(1);
 
 	private final int val;
 	

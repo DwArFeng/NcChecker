@@ -31,6 +31,15 @@ public interface CodeSerial extends Iterable<Code>{
 	public Code[] toArray();
 	
 	/**
+	 * 返回代码的数组形式。
+	 * @param start 开始的行号。
+	 * @param end 结束的行号。
+	 * @return 返回的代码区间。
+	 * @throws IndexOutOfBoundsException 起始或结束的行号超界。
+	 */
+	public Code[] toArray(int start, int end);
+	
+	/**
 	 * 返回最大的代码行数。
 	 * @return 最大的代码行数。
 	 */
