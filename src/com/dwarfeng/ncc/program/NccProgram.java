@@ -31,7 +31,6 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 	 */
 	public NccProgram() {
 		super(new NccModuleManager(), new NccViewManager(), new NccControlManager(), new NccProgramManager());
-		// TODO Auto-generated constructor stub
 	}
 
 }

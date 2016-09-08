@@ -2,12 +2,11 @@ package com.dwarfeng.ncc.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -19,7 +18,6 @@ import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -27,19 +25,22 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.border.BevelBorder;
 import javax.swing.filechooser.FileFilter;
 
-import com.dwarfeng.dfunc.gui.JAdjustableBorderPanel;
-import com.dwarfeng.dfunc.gui.JConsole;
-import com.dwarfeng.dfunc.gui.JMenuItemAction;
+import com.dwarfeng.dfunc.cna.ArraysFunction;
+import com.dwarfeng.dfunc.gui.swing.JAdjustableBorderPanel;
+import com.dwarfeng.dfunc.gui.swing.JConsole;
+import com.dwarfeng.dfunc.gui.swing.JMenuItemAction;
+import com.dwarfeng.dfunc.gui.swing.MuaListModel;
 import com.dwarfeng.dfunc.prog.mvc.AbstractViewManager;
 import com.dwarfeng.ncc.control.NccControlPort;
 import com.dwarfeng.ncc.module.nc.Code;
@@ -50,6 +51,7 @@ import com.dwarfeng.ncc.program.key.StringFieldKey;
 import com.dwarfeng.ncc.view.gui.CodeLabelRender;
 import com.dwarfeng.ncc.view.gui.CodeRender;
 import com.dwarfeng.ncc.view.gui.FrameCp;
+import com.dwarfeng.ncc.view.gui.MutiStatus;
 import com.dwarfeng.ncc.view.gui.NotifyCp;
 import com.dwarfeng.ncc.view.gui.ProgCp;
 import com.dwarfeng.ncc.view.gui.StatusLabelType;
@@ -222,12 +224,10 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 */
 			@Override
 			public void showCode(CodeSerial codeSerial) {
-				codeCenter1.codeLabelModel.removeAllElements();
-				codeCenter1.codeModel.removeAllElements();
-				for(Code code:codeSerial){
-					codeCenter1.codeLabelModel.addElement(code);
-					codeCenter1.codeModel.addElement(code);
-				}
+				codeCenter1.codeLabelModel.clear();
+				codeCenter1.codeModel.clear();
+				codeCenter1.codeLabelModel.addAll(ArraysFunction.toCollection(codeSerial.toArray()));
+				codeCenter1.codeModel.addAll(ArraysFunction.toCollection(codeSerial.toArray()));
 			}
 
 			/*
@@ -236,8 +236,9 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 */
 			@Override
 			public void lockEdit() {
-				// TODO 临时的方法。
-				modiFlag = true;
+				codeCenter1.lockEdit();
+				codeCenter2.lockEdit();
+				codeToolBar.lockEdit();
 			}
 
 			/*
@@ -246,17 +247,19 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 */
 			@Override
 			public void unlockEdit() {
-				//TODO 临时的方法。
-				modiFlag = false;
+				codeCenter1.unlockEdit();
+				codeCenter2.unlockEdit();
+				codeToolBar.unlockEdit();
 			}
 
 			/*
 			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.view.gui.FrameCp#setModiFlag(boolean)
+			 * @see com.dwarfeng.ncc.view.gui.FrameCp#noneFileMode(boolean)
 			 */
 			@Override
-			public void setModiFlag(boolean aFlag) {
-				modiFlag = aFlag;
+			public void noneFileMode(boolean aFlag) {
+				// TODO Auto-generated method stub
+				
 			}
 		};
 		
@@ -379,12 +382,14 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 		private final JProgressBar progressBar;
 		private final NccMenu menu;
 		private final CodeCenter1 codeCenter1;
-		private final JTabbedPane codeCenterPanel;
+		private final CodeCenter2 codeCenter2;
+		private final CodeToolBar codeToolBar;
+		private final JPanel codePanel;
 		
-		private boolean modiFlag = false;
-
 		public NccFrame(){
 			this.codeCenter1 = new CodeCenter1();
+			this.codeCenter2 = new CodeCenter2();
+			this.codeToolBar = new CodeToolBar();
 			
 			setSize(new Dimension(800, 600));
 			addWindowListener(new WindowAdapter() {
@@ -413,23 +418,11 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			console.setInputFieldEnabled(false);
 			rightInMain.add(console, BorderLayout.SOUTH);
 			
-			JPanel codePanel = new JPanel();
+			codePanel = new JPanel();
 			mainPanel.add(codePanel, BorderLayout.WEST);
 			codePanel.setLayout(new BorderLayout(0, 0));
-			
-			JPanel codeNorthPanel = new JPanel();
-			codePanel.add(codeNorthPanel, BorderLayout.NORTH);
-			
-			JPanel codeSouthPanel = new JPanel();
-			codePanel.add(codeSouthPanel, BorderLayout.SOUTH);
-			
-			codeCenterPanel = new JTabbedPane(JTabbedPane.LEFT);
-			
-			codePanel.add(codeCenterPanel, BorderLayout.CENTER);
-			
-			codeCenterPanel.add(codeCenter1, 0);
-			//TODO 改成图标
-			codeCenterPanel.setTitleAt(0, "代码功能");
+			codePanel.add(codeCenter1, BorderLayout.CENTER);
+			codePanel.add(codeToolBar,BorderLayout.WEST);
 
 			JPanel statusPanel = new JPanel();
 			getContentPane().add(statusPanel, BorderLayout.SOUTH);
@@ -488,10 +481,15 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 		
 		
 		
-		private class NccMenu extends JMenuBar{
+		private class NccMenu extends JMenuBar implements MutiStatus{
 			
 			private final JMenu file;
+			private final JMenuItem file_open;
+			
 			private final JMenu edit;
+			
+			private boolean lockEditMask;
+			private boolean noneFileMask;
 			
 			
 			public NccMenu() {
@@ -505,7 +503,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				add(edit);
 				
 				//文件菜单的具体内容
-				file.add(new JMenuItemAction.Builder()
+				file_open = file.add(new JMenuItemAction.Builder()
 						.name(programAttrSet.getStringField(KEY_OPENFILE) + "(O)")
 						.description(programAttrSet.getStringField(KEY_OPENFILE_DES))
 						.keyStorke(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK))
@@ -520,24 +518,58 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				);
 			}
 			
+			/* (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.MutiStatus#lockEdit()
+			 */
+			@Override
+			public void lockEdit(){
+				lockEditMask = true;
+				refresh();
+			}
+			
+
+			/* (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.MutiStatus#unlockEdit()
+			 */
+			@Override
+			public void unlockEdit(){
+				lockEditMask = false;
+				refresh();
+			}
+			
+			/* (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.MutiStatus#noneFile(boolean)
+			 */
+			@Override
+			public void noneFile(boolean aFlag){
+				noneFileMask = aFlag;
+				refresh();
+			}
+			
+			private void refresh() {
+				file_open.setEnabled(!lockEditMask);
+			}
+			
 		}
 	
-		private class CodeCenter1 extends JPanel{
+		private class CodeCenter1 extends JPanel implements MutiStatus{
 
 			private final JList<Code> codeLabelList;
-			private final DefaultListModel<Code> codeLabelModel;
+			private final MuaListModel<Code> codeLabelModel;
 			private final ListCellRenderer<Code> codeLabelRender;
 			private final JList<Code> codeList;
-			private final DefaultListModel<Code> codeModel;
+			private final MuaListModel<Code> codeModel;
 			private final ListCellRenderer<Code> codeRender;
 			private final JScrollPane codeScrollPane;
 			
+			private boolean lockEditMask;
+			private boolean noneFileMask;
+			
 			public CodeCenter1() {
-				setBackground(Color.WHITE);
 				setLayout(new BorderLayout());
 				
 				codeLabelList = new JList<Code>();
-				codeLabelModel = new DefaultListModel<Code>();
+				codeLabelModel = new MuaListModel<Code>();
 				codeLabelRender = new CodeLabelRender();
 				codeLabelList.setModel(codeLabelModel);
 				codeLabelList.getScrollableTracksViewportWidth();
@@ -549,13 +581,158 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				add(codeScrollPane, BorderLayout.CENTER);
 				
 				codeList = new JList<Code>();
-				codeModel = new DefaultListModel<Code>();
+				codeModel = new MuaListModel<Code>();
 				codeRender = new CodeRender();
 				codeList.setModel(codeModel);
 				codeList.setCellRenderer(codeRender);
 				codeScrollPane.setViewportView(codeList);
 				codeScrollPane.setRowHeaderView(codeLabelList);
 				
+			}
+
+			/* (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.MutiStatus#lockEdit()
+			 */
+			@Override
+			public void lockEdit(){
+				lockEditMask = true;
+				refresh();
+			}
+			
+
+			/* (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.MutiStatus#unlockEdit()
+			 */
+			@Override
+			public void unlockEdit(){
+				lockEditMask = false;
+				refresh();
+			}
+			
+			/* (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.MutiStatus#noneFile(boolean)
+			 */
+			@Override
+			public void noneFile(boolean aFlag){
+				noneFileMask = aFlag;
+				refresh();
+			}
+			
+			private void refresh() {
+				codeLabelList.setEnabled(!(lockEditMask || noneFileMask));
+				codeList.setEnabled(!(lockEditMask || noneFileMask));
+			}
+			
+		}
+	
+		private class CodeCenter2 extends JPanel implements MutiStatus{
+			
+			private boolean noneFileMask;
+			private boolean lockEditMask;
+			
+			public CodeCenter2() {
+				setLayout(new BorderLayout());
+				
+				JScrollPane scrollPane = new JScrollPane();
+				add(scrollPane,BorderLayout.CENTER);
+				
+				JTextArea textArea = new JTextArea();
+				textArea.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+				
+				scrollPane.setViewportView(textArea);
+			}
+
+			/* (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.MutiStatus#lockEdit()
+			 */
+			@Override
+			public void lockEdit(){
+				lockEditMask = true;
+				refresh();
+			}
+			
+
+			/* (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.MutiStatus#unlockEdit()
+			 */
+			@Override
+			public void unlockEdit(){
+				lockEditMask = false;
+				refresh();
+			}
+			
+			/* (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.MutiStatus#noneFile(boolean)
+			 */
+			@Override
+			public void noneFile(boolean aFlag){
+				noneFileMask = aFlag;
+				refresh();
+			}
+			
+			private void refresh() {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		}
+		
+		private class CodeToolBar extends JToolBar implements MutiStatus{
+			
+			private final JButton codeFunction;
+			private final JButton codeEdit;
+			
+			private boolean codeFunctionFlag;
+			
+			private boolean lockEditMask = false;
+			private boolean noneFileMask = false;
+			
+			public CodeToolBar() {
+				setFloatable(false);
+				setBorder(new BevelBorder(BevelBorder.LOWERED));
+				setOrientation(JToolBar.VERTICAL);
+				
+				codeFunction = new JButton();
+				codeFunction.setText("码"); // TODO 以后改成图标
+				codeFunctionFlag = false;
+				codeFunction.setEnabled(false);
+				add(codeFunction);
+				
+				codeEdit = new JButton();
+				codeEdit.setText("改"); // TODO 以后改成图标
+				add(codeEdit);
+			}
+			
+			/* (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.MutiStatus#lockEdit()
+			 */
+			@Override
+			public void lockEdit(){
+				lockEditMask = true;
+				refresh();
+			}
+			
+			/* (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.MutiStatus#unlockEdit()
+			 */
+			@Override
+			public void unlockEdit(){
+				lockEditMask = false;
+				refresh();
+			}
+			
+			/* (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.MutiStatus#noneFile(boolean)
+			 */
+			@Override
+			public void noneFile(boolean aFlag){
+				noneFileMask = aFlag;
+				refresh();
+			}
+			
+			private void refresh(){
+				codeEdit.setEnabled(!(lockEditMask || noneFileMask));
+				codeFunction.setEnabled(lockEditMask || noneFileMask ? false : codeFunctionFlag);
 			}
 			
 		}

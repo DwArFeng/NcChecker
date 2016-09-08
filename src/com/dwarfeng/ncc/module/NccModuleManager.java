@@ -1,13 +1,12 @@
 package com.dwarfeng.ncc.module;
 
 import java.io.InputStream;
-import java.util.Objects;
 
 import com.dwarfeng.dfunc.prog.mvc.AbstractModuleManager;
-import com.dwarfeng.ncc.module.expl.CodeLoader;
 import com.dwarfeng.ncc.module.expl.ExplCp;
-import com.dwarfeng.ncc.module.expl.ScannerCodeLoader;
+import com.dwarfeng.ncc.module.front.CodeLoader;
 import com.dwarfeng.ncc.module.front.FrontCp;
+import com.dwarfeng.ncc.module.mut.ScannerCodeLoader;
 import com.dwarfeng.ncc.module.nc.CodeSerial;
 import com.dwarfeng.ncc.program.NccProgramAttrSet;
 import com.dwarfeng.ncc.program.conf.FrontConfig;
@@ -83,7 +82,7 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 		private final FrontCp frontModuleControlPort = new FrontCp() {
 			
 			private CodeSerial frontCodeSerial;
-			private int codesInPage;
+			
 			
 			/*
 			 * (non-Javadoc)

@@ -10,16 +10,10 @@ import com.dwarfeng.ncc.program.conf.MfAppearConfig;
  * @since 1.8
  */
 public interface FrameCp {
-
-	/**
-	 * 设置调整标签。
-	 * <p> 当调整标签为true时，大多数侦听被屏蔽，这样，更改组件的属性时就不会触发侦听。
-	 * @param aFlag 指定的标签。
-	 */
-	public void setModiFlag(boolean aFlag);
 	
 	/**
 	 * 锁定编辑功能。
+	 * <p> 该方法是在对文件进行读取或其它需要场合临时锁定编辑功能，该方法不应该长时间被使用。
 	 */
 	public void lockEdit();
 	
@@ -27,6 +21,13 @@ public interface FrameCp {
 	 * 解锁编辑功能。
 	 */
 	public void unlockEdit();
+	
+	/**
+	 * 设置显示模式是否为无文件模式。
+	 * <p> 在无文件模式下，诸如保存、另存为等功能将被禁用。
+	 * @param aFlag
+	 */
+	public void noneFileMode(boolean aFlag);
 	
 	/**
 	 * 应用指定设置下的外观。
@@ -67,6 +68,5 @@ public interface FrameCp {
 	 * @param message 控制台的输出文本。
 	 */
 	public void traceInConsole(String message);
-	
 	
 }

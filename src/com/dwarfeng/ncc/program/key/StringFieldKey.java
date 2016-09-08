@@ -32,5 +32,7 @@ public enum StringFieldKey {
 	
 	/**¾ÍÐ÷*/
 	OUT_GETREADY,
+	/**Æô¶¯Íê±Ï*/
+	OUT_STARTFIN,
 	
 }

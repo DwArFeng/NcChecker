@@ -1,5 +1,7 @@
 package com.dwarfeng.ncc.control;
 
+import java.io.File;
+
 import com.dwarfeng.dfunc.prog.mvc.ControlPort;
 
 /**
@@ -22,9 +24,23 @@ public interface NccControlPort extends ControlPort {
 	public void openNcFile();
 	
 	/**
+	 * 打开指定的NC文件。
+	 * @param file 指定的文件。
+	 * @throws IllegalStateException 程序未启动时调用此方法。
+	 * @throws NullPointerException 入口参数为 <code>null</code>。
+	 */
+	public void openNcFile(File file);
+	
+	/**
 	 * 启动程序。
 	 * @throws IllegalStateException 当程序已经启动，还未关闭时重复调用此方法。
 	 */
 	public void startProgram();
 	
+	/**
+	 * 关闭前端的程序。
+	 * @throws IllegalStateException 程序未启动时调用此方法。
+	 * @throws NullPointerException 前端的文件并不存在。
+	 */
+	public void closeFrontFile();
 }
