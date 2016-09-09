@@ -11,9 +11,12 @@ public final class FrontConfig {
 	
 	/**默认值*/
 	public static final FrontConfig DEFAULT = 
-			new FrontConfig();
+			new FrontConfig(20);
 	
-	private FrontConfig() {
+	private final int maxRollback;
+	
+	private FrontConfig(int maxRollback) {
+		this.maxRollback = maxRollback;
 	}
 	
 	/**
@@ -22,11 +25,23 @@ public final class FrontConfig {
 	 * @since 1.8
 	 */
 	public static class Builder implements Buildable<FrontConfig>{
+		
+		private int maxRollback = DEFAULT.maxRollback;
 
 		/**
 		 * 生成默认的前端配置构造器。
 		 */
 		public Builder() {}
+		
+		/**
+		 * 调整最大回滚数。
+		 * @param val 值。
+		 * @return 构造器自身。
+		 */
+		public Builder maxRollback(int val){
+			maxRollback = Math.max(0, val);
+			return this;
+		}
 		
 		/*
 		 * (non-Javadoc)
@@ -34,10 +49,17 @@ public final class FrontConfig {
 		 */
 		@Override
 		public FrontConfig build() {
-			// TODO Auto-generated method stub
-			return null;
+			return new FrontConfig(maxRollback);
 		}
 		
+	}
+	
+	/**
+	 * 获取最大回滚值。
+	 * @return 最大回滚值。
+	 */
+	public int getMaxRolBack(){
+		return maxRollback;
 	}
 
 }

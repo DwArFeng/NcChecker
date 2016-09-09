@@ -1,5 +1,7 @@
 package com.dwarfeng.ncc.module.front;
 
+import java.io.File;
+
 import com.dwarfeng.ncc.module.nc.CodeSerial;
 import com.dwarfeng.ncc.program.conf.FrontConfig;
 
@@ -19,8 +21,9 @@ public interface FrontCp{
 	/**
 	 * 设置前台的代码列表。
 	 * @param codeSerial 指定的代码列表，如果要移除前台代码，则指定 <code>null</code>。
+	 * @param file 相连接的文件。
 	 */
-	public void setFrontCodeSerial(CodeSerial codeSerial);
+	public void setFrontCodeSerial(CodeSerial codeSerial, File file);
 	
 	/**
 	 * 使用指定的代码序列覆盖前台代码。
@@ -51,8 +54,29 @@ public interface FrontCp{
 	/**
 	 * 获取当前的代码。
 	 * @return 对应的代码。
-	 * @throws NullPointerException 前台代码不存在。
+	 * @throws IllegalStateException 前台代码不存在。
 	 */
 	public CodeSerial getCodeSerial(); 
+	
+	/**
+	 * 将前台代码段与某个文件相连接。
+	 * @param file 指定的文件，可以为 <code>null</code>。
+	 * @throws IllegalStateException 前台代码不存在。
+	 */
+	public void linkFile(File file);
+	
+	/**
+	 * 获取与前台相连接的文件。
+	 * @return 与前台向连接的文件，如果没有，则返回 <code>null</code>。
+	 * @throws IllegalStateException 前台代码不存在。
+	 */
+	public File getLinkedFile();
+	
+	/**
+	 * 返回前台文件是否需要保存。
+	 * @return 前台文件是否需要保存。
+	 * @throws IllegalStateException 前台代码不存在。
+	 */
+	public boolean needSave();
 
 }

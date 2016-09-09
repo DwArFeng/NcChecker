@@ -11,9 +11,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.util.Arrays;
+import java.util.Formatter;
 import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -36,11 +41,11 @@ import javax.swing.ListCellRenderer;
 import javax.swing.border.BevelBorder;
 import javax.swing.filechooser.FileFilter;
 
-import com.dwarfeng.dfunc.cna.ArraysFunction;
 import com.dwarfeng.dfunc.gui.swing.JAdjustableBorderPanel;
 import com.dwarfeng.dfunc.gui.swing.JConsole;
 import com.dwarfeng.dfunc.gui.swing.JMenuItemAction;
 import com.dwarfeng.dfunc.gui.swing.MuaListModel;
+import com.dwarfeng.dfunc.io.CT;
 import com.dwarfeng.dfunc.prog.mvc.AbstractViewManager;
 import com.dwarfeng.ncc.control.NccControlPort;
 import com.dwarfeng.ncc.module.nc.Code;
@@ -146,12 +151,18 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 	
 	//-----------------------------以下是需要使用的各种字段键值------------------------------------
 	
+	private static final String DIALOG_SUFF = "....";
 	private static final StringFieldKey KEY_TITLE = StringFieldKey.MAINFRAME_TITLE;
+	
 	private static final StringFieldKey KEY_FILE = StringFieldKey.MENU_FILE;
 	private static final StringFieldKey KEY_EDIT = StringFieldKey.MENU_EDIT;
+	
 	private static final StringFieldKey KEY_OPENFILE = StringFieldKey.MENU_FILE_OPENFILE;
 	private static final StringFieldKey KEY_OPENFILE_DES = StringFieldKey.MENU_FILE_OPENFILE_DES;
-	private static final StringFieldKey KEY_NOMISSION = StringFieldKey.MAINFRAME_NOMISSION;
+	private static final StringFieldKey KEY_NEW = StringFieldKey.MENU_FILE_NEW;
+	private static final StringFieldKey KEY_NEW_DES = StringFieldKey.MENU_FILE_NEW_DES;
+	
+	private static final StringFieldKey KEY_NOMISSION = StringFieldKey.PROGRESS_NOMISSION;
 	
 	//------------------------------------------------------------------------------------------------
 	
@@ -226,8 +237,10 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			public void showCode(CodeSerial codeSerial) {
 				codeCenter1.codeLabelModel.clear();
 				codeCenter1.codeModel.clear();
-				codeCenter1.codeLabelModel.addAll(ArraysFunction.toCollection(codeSerial.toArray()));
-				codeCenter1.codeModel.addAll(ArraysFunction.toCollection(codeSerial.toArray()));
+				if(Objects.nonNull(codeSerial)){
+					codeCenter1.codeLabelModel.addAll(Arrays.asList(codeSerial.toArray()));
+					codeCenter1.codeModel.addAll(Arrays.asList(codeSerial.toArray()));
+				}
 			}
 
 			/*
@@ -236,6 +249,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 */
 			@Override
 			public void lockEdit() {
+				menu.lockEdit();
 				codeCenter1.lockEdit();
 				codeCenter2.lockEdit();
 				codeToolBar.lockEdit();
@@ -247,6 +261,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 */
 			@Override
 			public void unlockEdit() {
+				menu.unlockEdit();
 				codeCenter1.unlockEdit();
 				codeCenter2.unlockEdit();
 				codeToolBar.unlockEdit();
@@ -258,8 +273,24 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 */
 			@Override
 			public void noneFileMode(boolean aFlag) {
-				// TODO Auto-generated method stub
-				
+				menu.noneFile(aFlag);
+				codeCenter1.noneFile(aFlag);
+				codeCenter2.noneFile(aFlag);
+				codeToolBar.noneFile(aFlag);
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.gui.FrameCp#traceInConsole(java.lang.String, java.lang.String[])
+			 */
+			@Override
+			public void traceInConsole(String format, Object... args) {
+				final Formatter formatter = new Formatter();
+				try{
+					console.getOut().println(CT.toString(formatter.format(format, args)));
+				}finally{
+					formatter.close();
+				}
 			}
 		};
 		
@@ -462,6 +493,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			
 			progressSuspendButton = new JButton();
 			progressSuspendButton.addActionListener(new ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					monitor.suspend();
 				}
@@ -484,6 +516,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 		private class NccMenu extends JMenuBar implements MutiStatus{
 			
 			private final JMenu file;
+			private final JMenuItem file_new;
 			private final JMenuItem file_open;
 			
 			private final JMenu edit;
@@ -495,16 +528,31 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			public NccMenu() {
 				super();
 				//定义菜单栏
-				file = new JMenu(programAttrSet.getStringField(KEY_FILE) + "(F)");
+				file = new JMenu(programAttrSet.getStringField(KEY_FILE));
 				file.setMnemonic('F');
 				add(file);
-				edit = new JMenu(programAttrSet.getStringField(KEY_EDIT) + "(E)");
+				edit = new JMenu(programAttrSet.getStringField(KEY_EDIT));
 				edit.setMnemonic('E');
 				add(edit);
 				
 				//文件菜单的具体内容
+				file_new = file.add(new JMenuItemAction.Builder()
+						.name(programAttrSet.getStringField(KEY_NEW))
+						.description(programAttrSet.getStringField(KEY_NEW_DES))
+						.keyStorke(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK))
+						.mnemonic(KeyEvent.VK_N)
+						.listener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								// TODO Auto-generated method stub
+								
+							}
+						})
+						.build()
+				);
+				
 				file_open = file.add(new JMenuItemAction.Builder()
-						.name(programAttrSet.getStringField(KEY_OPENFILE) + "(O)")
+						.name(programAttrSet.getStringField(KEY_OPENFILE) + DIALOG_SUFF)
 						.description(programAttrSet.getStringField(KEY_OPENFILE_DES))
 						.keyStorke(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK))
 						.mnemonic(KeyEvent.VK_O)
@@ -547,6 +595,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			}
 			
 			private void refresh() {
+				file_new.setEnabled(!lockEditMask);
 				file_open.setEnabled(!lockEditMask);
 			}
 			

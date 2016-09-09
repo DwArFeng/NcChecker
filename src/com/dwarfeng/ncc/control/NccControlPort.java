@@ -43,4 +43,11 @@ public interface NccControlPort extends ControlPort {
 	 * @throws NullPointerException 前端的文件并不存在。
 	 */
 	public void closeFrontFile();
+	
+	/**
+	 * 保存前端的程序。
+	 * @throws IllegalStateException 程序未启动时调用此方法。
+	 * @throws NullPointerException 前端文件并不存在。
+	 */
+	public void saveFrontFile();
 }

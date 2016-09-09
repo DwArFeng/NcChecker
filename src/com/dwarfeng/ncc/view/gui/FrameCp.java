@@ -57,9 +57,8 @@ public interface FrameCp {
 	public void setVisible(boolean aFlag);
 	
 	/**
-	 * 显示指定的代码序列。
+	 * 显示指定的代码序列，如果需要撤下代码，则入口参数使用 <code>null</code>。
 	 * @param codeSerial 显示指定的代码序列。
-	 * @throws NullPointerException 入口参数为 <code>null</code>。
 	 */
 	public void showCode(CodeSerial codeSerial);
 	
@@ -68,5 +67,12 @@ public interface FrameCp {
 	 * @param message 控制台的输出文本。
 	 */
 	public void traceInConsole(String message);
+	
+	/**
+	 * 在控制台上格式化输出指定的文本。
+	 * @param format 指定的格式。
+	 * @param args 参数集。
+	 */
+	public void traceInConsole(String format,Object... args);
 	
 }

@@ -1,6 +1,10 @@
 package com.dwarfeng.ncc.module;
 
+import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Objects;
 
 import com.dwarfeng.dfunc.prog.mvc.AbstractModuleManager;
 import com.dwarfeng.ncc.module.expl.ExplCp;
@@ -81,16 +85,15 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 		
 		private final FrontCp frontModuleControlPort = new FrontCp() {
 			
-			private CodeSerial frontCodeSerial;
-			
-			
 			/*
 			 * (non-Javadoc)
 			 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#setFrontCodeSerial(com.dwarfeng.ncc.module.nc.CodeSerial)
 			 */
 			@Override
-			public void setFrontCodeSerial(CodeSerial codeSerial) {
+			public void setFrontCodeSerial(CodeSerial codeSerial, File file) {
 				frontCodeSerial = codeSerial;
+				linkedFile = file;
+				rollback.clear();
 			}
 			
 			/*
@@ -108,7 +111,9 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 			 */
 			@Override
 			public void applyFontConfig(FrontConfig config) {
-				
+				Objects.requireNonNull(config);
+				maxRollback = config.getMaxRolBack();
+				fitRoolback();
 			}
 
 			/*
@@ -118,6 +123,7 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 			@Override
 			public FrontConfig getFontConfig() {
 				return new FrontConfig.Builder()
+						.maxRollback(maxRollback)
 						.build();
 			}
 
@@ -136,6 +142,7 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 			 */
 			@Override
 			public CodeSerial getCodeSerial() {
+				if(!hasFrontCode()) throw new IllegalStateException();
 				return frontCodeSerial;
 			}
 
@@ -145,13 +152,61 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 			 */
 			@Override
 			public void overwriteCodeSerial(CodeSerial codeSerial) {
+				if(!hasFrontCode()) throw new IllegalStateException();
+				rollback.push(frontCodeSerial);
+				frontCodeSerial = codeSerial;
+				fitRoolback();
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.module.front.FrontCp#linkFile(java.io.File)
+			 */
+			@Override
+			public void linkFile(File file) {
+				if(!hasFrontCode()) throw new IllegalStateException();
+				linkedFile = file;
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.module.front.FrontCp#getLinkedFile()
+			 */
+			@Override
+			public File getLinkedFile() {
+				if(!hasFrontCode()) throw new IllegalStateException();
+				return linkedFile;
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.module.front.FrontCp#needSave()
+			 */
+			@Override
+			public boolean needSave() {
+				if(!hasFrontCode()) throw new IllegalStateException();
 				// TODO Auto-generated method stub
-				
+				return true;
+			}
+			
+			private void fitRoolback(){
+				while(rollback.size() > maxRollback){
+					rollback.removeLast();
+				}
 			}
 			
 		};
 		
-		public FrontModule() {}
+		private final Deque<CodeSerial> rollback;
+		
+		private CodeSerial frontCodeSerial;
+		private File linkedFile;
+		private int maxRollback;
+		
+		
+		public FrontModule() {
+			rollback = new ArrayDeque<CodeSerial>();
+		}
 		
 	}
 	

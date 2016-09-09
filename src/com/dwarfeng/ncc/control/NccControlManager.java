@@ -39,7 +39,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 	
 	private static final String KEY_NOTINIT = "控制管理器还未初始化。";
 	private static final String KEY_INITED = "控制管理器已经初始化了。";
-	private static final StringFieldKey KEY_GETREADY = StringFieldKey.OUT_GETREADY;
+	private static final StringFieldKey KEY_GETREADY = StringFieldKey.LABEL_GETREADY;
 	private static final StringFieldKey KEY_STARTFIN = StringFieldKey.OUT_STARTFIN;
 	
 	//------------------------------------------------------------------------------------------------
@@ -81,7 +81,9 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 			
 			//各个管理器初始化参数
 			moduleControlPort.frontCp().applyFontConfig(fc);
+			moduleControlPort.frontCp().setFrontCodeSerial(null,null);
 			viewControlPort.frameCp().applyAppearanceConfig(mfac);
+			viewControlPort.frameCp().noneFileMode(true);
 			
 			//显示程序主界面
 			viewControlPort.frameCp().setVisible(true);
@@ -128,13 +130,12 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 		public void openNcFile() {
 			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
 			
-			final NotifyCp notifyControlPort = getViewControlPort().notifyCp();
 			final boolean aFlag = true;
 			final FileFilter[] fileFilters = new FileFilter[]{
 				new FileNameExtensionFilter(programAttrSet.getStringField(StringFieldKey.CTRL_TEXTFILE), "txt"),
 				new FileNameExtensionFilter(programAttrSet.getStringField(StringFieldKey.CTRL_NCFILE), "nc", "ptp", "mpf")
 			};
-			final File file = notifyControlPort.askFile(fileFilters, aFlag);
+			final File file = viewControlPort.notifyCp().askFile(fileFilters, aFlag);
 			if(file == null) return;
 			openNcFile(file);
 		}
@@ -149,6 +150,9 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
 			Objects.requireNonNull(file);
 			
+			//有可能要关闭文件
+			perhapsCloseFrontFile();
+			
 			InputStream in = null;
 			CodeLoader codeLoader = null;
 			try{
@@ -158,7 +162,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 				return;
 			}
 			
-			programControlPort.backInvoke(new OpenFileRunnable(NccControlManager.this, codeLoader));
+			programControlPort.backInvoke(new OpenFileRunnable(NccControlManager.this, codeLoader, file));
 		}
 
 
@@ -171,8 +175,53 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
 			if(!moduleControlPort.frontCp().hasFrontCode()) throw new NullPointerException();
 			
+			//可能需要保存文件
+			perhapseSaveFrontFile();
+			
+			try{
+				viewControlPort.frameCp().lockEdit();
+				//从视图中撤下代码段
+				viewControlPort.frameCp().showCode(null);
+				//移除前台模型中的代码段
+				moduleControlPort.frontCp().setFrontCodeSerial(null, null);
+				
+			}finally{
+				viewControlPort.frameCp().unlockEdit();
+			}
 			// TODO Auto-generated method stub
 			
+		}
+		
+		/**
+		 * 如果某个操作可能会涉及到关闭文件，则调用该方法。
+		 * 该方法会检车是否存在前台文件，如果有前台文件且前台文件需要保存的话，则将其关闭。
+		 */
+		private void perhapsCloseFrontFile(){
+			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
+			if(		moduleControlPort.frontCp().hasFrontCode() &&
+					moduleControlPort.frontCp().needSave()) closeFrontFile();
+		}
+
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.control.NccControlPort#saveFrontFile()
+		 */
+		@Override
+		public void saveFrontFile() {
+			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
+			if(!moduleControlPort.frontCp().hasFrontCode()) throw new NullPointerException();
+			
+			// TODO Auto-generated method stub
+		}
+		
+		/**
+		 * 如果某个操作可能会涉及到保存文件，则调用该方法。
+		 * 该方法会检车是否存在前台文件，如果有前台文件的话，则将其保存。
+		 */
+		private void perhapseSaveFrontFile(){
+			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
+			if(moduleControlPort.frontCp().hasFrontCode()) saveFrontFile();
 		}
 		
 		
