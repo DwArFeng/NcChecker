@@ -11,15 +11,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Formatter;
 import java.util.Objects;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -47,6 +45,7 @@ import com.dwarfeng.dfunc.gui.swing.JMenuItemAction;
 import com.dwarfeng.dfunc.gui.swing.MuaListModel;
 import com.dwarfeng.dfunc.io.CT;
 import com.dwarfeng.dfunc.prog.mvc.AbstractViewManager;
+import com.dwarfeng.dfunc.threads.InnerThread;
 import com.dwarfeng.ncc.control.NccControlPort;
 import com.dwarfeng.ncc.module.nc.Code;
 import com.dwarfeng.ncc.module.nc.CodeSerial;
@@ -58,7 +57,7 @@ import com.dwarfeng.ncc.view.gui.CodeRender;
 import com.dwarfeng.ncc.view.gui.FrameCp;
 import com.dwarfeng.ncc.view.gui.MutiStatus;
 import com.dwarfeng.ncc.view.gui.NotifyCp;
-import com.dwarfeng.ncc.view.gui.ProgCp;
+import com.dwarfeng.ncc.view.gui.ProgressModel;
 import com.dwarfeng.ncc.view.gui.StatusLabelType;
 
 /**
@@ -108,16 +107,6 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 		public NotifyCp notifyCp() {
 			if(!initFlag) throw new IllegalStateException(KEY_NOTINIT);
 			return notifyControlPort;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * @see com.dwarfeng.ncc.view.NccViewControlPort#getProgressMonitor()
-		 */
-		@Override
-		public ProgCp progCp() {
-			if(!initFlag) throw new IllegalStateException(KEY_NOTINIT);
-			return mainFrame.monitor;
 		}
 		
 	};
@@ -292,113 +281,19 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 					formatter.close();
 				}
 			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.gui.FrameCp#startProgressMonitor(com.dwarfeng.ncc.view.gui.ProgressModel)
+			 */
+			@Override
+			public void startProgressMonitor(ProgressModel model) {
+				Objects.requireNonNull(model);
+				progressPanel.setProgressModel(model);
+			}
 		};
 		
-		private final ProgCp monitor = new ProgCp(){
-
-			private final Lock lock = new ReentrantLock();
-			
-			private boolean startFlag = false;
-			private boolean suspendFlag = false;
-			
-			/*
-			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.view.gui.ProgressMonitor#startMonitor()
-			 */
-			@Override
-			public void startMonitor() {
-				if(startFlag) throw new IllegalStateException();
-				startFlag = true;
-				progressSuspendButton.setEnabled(true);
-				progressBar.setEnabled(true);
-			}
-			
-			/*
-			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.view.gui.ProgressMonitor#setindeterminate(boolean)
-			 */
-			@Override
-			public void setIndeterminate(boolean aFlag) {
-				if(!startFlag) throw new IllegalStateException();
-				progressBar.setIndeterminate(aFlag);
-			}
-			
-			/*
-			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.view.gui.ProgressMonitor#setTotleProgress(int)
-			 */
-			@Override
-			public void setTotleProgress(int val) {
-				if(!startFlag) throw new IllegalStateException();
-				progressBar.setMaximum(val);
-			}
-			
-			/*
-			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.view.gui.ProgressMonitor#setCurrentProgress(int)
-			 */
-			@Override
-			public void setCurrentProgress(int val) {
-				if(!startFlag) throw new IllegalStateException();
-				progressBar.setValue(val);
-			}
-			
-			/*
-			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.view.gui.ProgressMonitor#isSuspend()
-			 */
-			@Override
-			public boolean isSuspend() {
-				if(!startFlag) throw new IllegalStateException();
-				lock.lock();
-				try{
-					return suspendFlag;
-				}finally{
-					lock.unlock();
-				}
-			}
-			
-			/*
-			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.view.gui.ProgressMonitor#endMonitor()
-			 */
-			@Override
-			public void endMonitor() {
-				if(!startFlag) throw new IllegalStateException();
-				progressBar.setValue(0);
-				progressBar.setEnabled(false);
-				progressSuspendButton.setEnabled(false);
-				progressLabel.setText(programAttrSet.getStringField(KEY_NOMISSION));
-				progressBar.setIndeterminate(false);
-				startFlag = false;
-			}
-
-			/*
-			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.view.gui.ProgressMonitor#setMessage(java.lang.String)
-			 */
-			@Override
-			public void setMessage(String message) {
-				if(!startFlag) throw new IllegalStateException();
-				progressLabel.setText(message);
-			}
-
-			/*
-			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.view.gui.ProgressMonitor#suspend()
-			 */
-			@Override
-			public void suspend() {
-				if(!startFlag) throw new IllegalStateException();
-				lock.lock();
-				try{
-					suspendFlag = true;
-				}finally{
-					lock.unlock();
-				}
-			}
-			
-		};
+		
 		
 		
 		
@@ -408,9 +303,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 		private final JLabel statusLabel;
 		private final JAdjustableBorderPanel mainPanel;
 		private final JAdjustableBorderPanel rightInMain;
-		private final JLabel progressLabel;
-		private final JButton progressSuspendButton;
-		private final JProgressBar progressBar;
+		private final ProgressPanel progressPanel;
 		private final NccMenu menu;
 		private final CodeCenter1 codeCenter1;
 		private final CodeCenter2 codeCenter2;
@@ -458,10 +351,10 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			JPanel statusPanel = new JPanel();
 			getContentPane().add(statusPanel, BorderLayout.SOUTH);
 			GridBagLayout gbl_statusPanel = new GridBagLayout();
-			gbl_statusPanel.columnWidths = new int[]{55, 120, 37, 28, 0};
-			gbl_statusPanel.rowHeights = new int[]{19, 0};
-			gbl_statusPanel.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-			gbl_statusPanel.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+			gbl_statusPanel.columnWidths = new int[]{60, 440, 0};
+			gbl_statusPanel.rowHeights = new int[]{20, 0};
+			gbl_statusPanel.columnWeights = new double[]{0.0, 0.0, 1.0};
+			gbl_statusPanel.rowWeights = new double[]{0.0};
 			statusPanel.setLayout(gbl_statusPanel);
 			
 			statusLabel = new JLabel();
@@ -473,37 +366,14 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			gbc_statusLabel.gridy = 0;
 			statusPanel.add(statusLabel, gbc_statusLabel);
 			
-			progressBar = new JProgressBar();
-			progressBar.setToolTipText("133");
-			GridBagConstraints gbc_progressBar = new GridBagConstraints();
-			gbc_progressBar.anchor = GridBagConstraints.NORTH;
-			gbc_progressBar.fill = GridBagConstraints.HORIZONTAL;
-			gbc_progressBar.insets = new Insets(0, 0, 0, 5);
-			gbc_progressBar.gridx = 1;
-			gbc_progressBar.gridy = 0;
-			statusPanel.add(progressBar, gbc_progressBar);
-			
-			progressLabel = new JLabel(programAttrSet.getStringField(KEY_NOMISSION));
-			GridBagConstraints gbc_progressLabel = new GridBagConstraints();
-			gbc_progressLabel.fill = GridBagConstraints.BOTH;
-			gbc_progressLabel.insets = new Insets(0, 0, 0, 5);
-			gbc_progressLabel.gridx = 2;
-			gbc_progressLabel.gridy = 0;
-			statusPanel.add(progressLabel, gbc_progressLabel);
-			
-			progressSuspendButton = new JButton();
-			progressSuspendButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					monitor.suspend();
-				}
-			});
-			progressSuspendButton.setEnabled(false);
-			GridBagConstraints gbc_progressSuspendButton = new GridBagConstraints();
-			gbc_progressSuspendButton.fill = GridBagConstraints.BOTH;
-			gbc_progressSuspendButton.gridx = 3;
-			gbc_progressSuspendButton.gridy = 0;
-			statusPanel.add(progressSuspendButton, gbc_progressSuspendButton);
+			progressPanel = new ProgressPanel();
+			GridBagConstraints gbc_progressPanel = new GridBagConstraints();
+			gbc_progressPanel.anchor = GridBagConstraints.NORTH;
+			gbc_progressPanel.fill = GridBagConstraints.BOTH;
+			gbc_progressPanel.insets = new Insets(0, 0, 0, 5);
+			gbc_progressPanel.gridx = 1;
+			gbc_progressPanel.gridy = 0;
+			statusPanel.add(progressPanel, gbc_progressPanel);
 			
 			menu = new NccMenu();
 			setJMenuBar(menu);
@@ -785,6 +655,137 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			}
 			
 		}
+	
+		private final class ProgressPanel extends JPanel{
+			
+			private static final long serialVersionUID = 3169947673607680849L;
+
+			private final class Monitor extends InnerThread{
+
+				private final Lock lock;
+				private final Condition condition;
+				private ProgressModel model;
+				
+				public Monitor() {
+					super("Progress Monitor", true);
+					lock = new ReentrantLock();
+					condition = lock.newCondition();
+				}
+
+				/*
+				 * (non-Javadoc)
+				 * @see com.dwarfeng.dfunc.threads.InnerThread#threadRunMethod()
+				 */
+				@Override
+				protected void threadRunMethod() {
+					// TODO Auto-generated method stub
+					lock.lock();
+					try{
+						while(Objects.isNull(model)){
+							try {
+								condition.await();
+							} catch (InterruptedException e) {
+								//DO NOTHING
+							}
+						}
+						if(model.isEnd() || model.isSuspend()){
+							resetPanel();
+							model = null;
+						}else{
+							try{
+								//获取关键值
+								int max = model.getMaximum();
+								int val = model.getValue();
+								String text = model.getLabelText();
+								
+								//判断异常情况
+								if(max < val || max < 1 || val < 0) throw new ArithmeticException();
+								Objects.requireNonNull(text);
+								
+								//设置诸属性
+								progressBar.setIndeterminate(model.isIndeterminate());
+								progressBar.setMaximum(max);
+								progressBar.setValue(val);
+								progressBar.setStringPainted(true);
+								statusLabel.setText(text);
+								
+							}catch(Exception e){
+								e.printStackTrace();
+								model.suspend();
+								resetPanel();
+							}
+						}
+						
+					}finally{
+						lock.unlock();
+					}
+				}
+
+
+				@Override
+				protected void threadStopMethod() {}
+				@Override
+				protected void threadStartMethod() {}
+				
+				private void setProgressModule(ProgressModel model){
+					lock.lock();
+					try{
+						this.model = model;
+						CT.trace(model);
+						condition.signalAll();
+					}finally{
+						lock.unlock();
+					}
+				}
+				
+			}
+			
+			private final Monitor monitor;
+			
+			private final JButton suspendButton;
+			private final JProgressBar progressBar;
+			private final JLabel statusLabel;
+			
+			public ProgressPanel() {
+				this.monitor = new Monitor();
+				this.monitor.runThread();
+				
+				setLayout(new BorderLayout());
+				
+				suspendButton = new JButton();
+				suspendButton.setPreferredSize(new Dimension(20,20));
+				add(suspendButton, BorderLayout.WEST);
+				
+				progressBar = new JProgressBar();
+				progressBar.setValue(0);
+				progressBar.setMaximum(1);
+				progressBar.setIndeterminate(false);
+				progressBar.setStringPainted(false);
+				
+				add(progressBar, BorderLayout.CENTER);
+				
+				statusLabel = new JLabel();
+				statusLabel.setText(programAttrSet.getStringField(KEY_NOMISSION));
+				statusLabel.setPreferredSize(new Dimension(200, 0));
+				add(statusLabel, BorderLayout.EAST);
+				
+			}
+			
+			public void setProgressModel(ProgressModel model){
+				monitor.setProgressModule(model);
+			}
+			
+			private void resetPanel(){
+				progressBar.setIndeterminate(false);
+				progressBar.setValue(0);
+				progressBar.setMaximum(1);
+				progressBar.setStringPainted(false);
+				statusLabel.setText(programAttrSet.getStringField(KEY_NOMISSION));
+			}
+			
+		}
+	
+	
 	}
 	
 

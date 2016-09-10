@@ -14,6 +14,8 @@ import com.dwarfeng.ncc.module.nc.ArrayCodeList;
 import com.dwarfeng.ncc.module.nc.Code;
 import com.dwarfeng.ncc.module.nc.CodeSerial;
 import com.dwarfeng.ncc.program.key.StringFieldKey;
+import com.dwarfeng.ncc.view.gui.DefaultProgressModel;
+import com.dwarfeng.ncc.view.gui.ProgressModel;
 
 /**
  * 打开文件所需要的Runnable。
@@ -60,12 +62,14 @@ public final class OpenFileRunnable extends AbstractCmr implements Runnable {
 					programAttrSet.getStringField(KEY_LOADSTART),
 					file.getAbsolutePath()
 			);
-			//开始监视
-			viewControlPort.progCp().startMonitor();
-			//设置监视标签
-			viewControlPort.progCp().setMessage(programAttrSet.getStringField(KEY_LOADING));
-			//监视模式为不定模式
-			viewControlPort.progCp().setIndeterminate(true);
+			
+			//生成进度模型
+			ProgressModel progressModel = new DefaultProgressModel();
+			progressModel.setIndeterminate(true);
+			progressModel.setLabelText(programAttrSet.getStringField(KEY_LOADING));
+			
+			//设置进度模型
+			viewControlPort.frameCp().startProgressMonitor(progressModel);
 			
 			final List<Code> codes = new ArrayList<Code>();
 			
@@ -76,15 +80,16 @@ public final class OpenFileRunnable extends AbstractCmr implements Runnable {
 			for(int i = 1 ; codeLoader.hasNext() ; i++){
 				
 				//如果手动停止，则终止程序。
-				if(viewControlPort.progCp().isSuspend()){
+				if(progressModel.isSuspend()){
 					return;
 				}
 				
 				//否则循环读取代码。
 				codes.add(codeLoader.loadNext());
-				viewControlPort.progCp().setMessage(programAttrSet.getStringField(KEY_LOADING) + i);
+				progressModel.setLabelText(programAttrSet.getStringField(KEY_LOADING) + i);
 				
 			}
+			progressModel.end();
 			cti.stop();
 			
 			//循环结束，代码读取完毕。
@@ -107,7 +112,6 @@ public final class OpenFileRunnable extends AbstractCmr implements Runnable {
 			return;
 		}finally{
 			viewControlPort.frameCp().unlockEdit();
-			viewControlPort.progCp().endMonitor();
 			try {
 				codeLoader.close();
 			} catch (IOException e) {

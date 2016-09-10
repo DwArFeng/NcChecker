@@ -75,4 +75,11 @@ public interface FrameCp {
 	 */
 	public void traceInConsole(String format,Object... args);
 	
+	/**
+	 * 开始进度监视。
+	 * @param model 指定的进度模型。
+	 * @throws NullPointerException 进度模型为 <code>null</code>。
+	 */
+	public void startProgressMonitor(ProgressModel model);
+	
 }
