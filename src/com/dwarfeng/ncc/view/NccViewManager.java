@@ -706,7 +706,6 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 								progressBar.setIndeterminate(model.isIndeterminate());
 								progressBar.setMaximum(max);
 								progressBar.setValue(val);
-								progressBar.setStringPainted(true);
 								statusLabel.setText(text);
 								
 							}catch(Exception e){
@@ -760,7 +759,6 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				progressBar.setValue(0);
 				progressBar.setMaximum(1);
 				progressBar.setIndeterminate(false);
-				progressBar.setStringPainted(false);
 				
 				add(progressBar, BorderLayout.CENTER);
 				
@@ -779,7 +777,6 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				progressBar.setIndeterminate(false);
 				progressBar.setValue(0);
 				progressBar.setMaximum(1);
-				progressBar.setStringPainted(false);
 				statusLabel.setText(programAttrSet.getStringField(KEY_NOMISSION));
 			}
 			
