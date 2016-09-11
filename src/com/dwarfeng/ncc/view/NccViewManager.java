@@ -619,6 +619,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				
 				codeEdit = new JButton();
 				codeEdit.setText("改"); // TODO 以后改成图标
+				
 				add(codeEdit);
 			}
 			
@@ -730,7 +731,6 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 					lock.lock();
 					try{
 						this.model = model;
-						CT.trace(model);
 						condition.signalAll();
 					}finally{
 						lock.unlock();

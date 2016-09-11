@@ -1,5 +1,6 @@
 package com.dwarfeng.ncc.program;
 
+import java.awt.Image;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -10,6 +11,8 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
+import javax.imageio.ImageIO;
+
 import com.dwarfeng.dfunc.io.FileFunction;
 import com.dwarfeng.dfunc.prog.mvc.AbstractProgramManager;
 import com.dwarfeng.dfunc.threads.RunnerQueue;
@@ -17,6 +20,7 @@ import com.dwarfeng.ncc.program.conf.ConfigCp;
 import com.dwarfeng.ncc.program.conf.FrontConfig;
 import com.dwarfeng.ncc.program.conf.MfAppearConfig;
 import com.dwarfeng.ncc.program.key.ExceptionFieldKey;
+import com.dwarfeng.ncc.program.key.ImageKey;
 import com.dwarfeng.ncc.program.key.StringFieldKey;
 
 /**
@@ -33,8 +37,8 @@ public final class NccProgramManager extends AbstractProgramManager<NccProgramCo
 	
 	//------------------------------------------------------------------------------------------------
 	
-	private static final String STRING_FIELD_PATH = "resource/lang/StringField";
-	private static final String EXCEPTION_FIELD_PATH = "resource/lang/ExceptionField";
+	private static final String STRING_FIELD_PATH = "lang/StringField";
+	private static final String EXCEPTION_FIELD_PATH = "lang/ExceptionField";
 	private static final String MFAPPEAR_CONFIG_PATH = "config/mfappear.cfg";
 	private static final String MFAPPEAR_CONFIG_COMMENT = "Config for main frame's appearance";
 	
@@ -104,6 +108,20 @@ public final class NccProgramManager extends AbstractProgramManager<NccProgramCo
 		public String getExceptionField(ExceptionFieldKey key) {
 			if(!initFlag) throw new IllegalStateException(KEY_NOTINIT);
 			return exceptionField.getString(key.toString());
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.program.NccProgramAttrSet#getImage(com.dwarfeng.ncc.program.key.ImageKey)
+		 */
+		@Override
+		public Image getImage(ImageKey key) {
+			try {
+				return ImageIO.read(key.getUrl());
+			} catch (IOException e) {
+				//由于图片固化在jar包中，除非破坏文件，否则不会抛出异常。
+				return null;
+			}
 		}
 		
 	};
