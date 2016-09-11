@@ -9,8 +9,12 @@ import java.net.URL;
  */
 public enum ImageKey{
 	
-	M_NEW("/resource/image/m_new.png");
-	
+	/**新建文件的图标*/
+	M_NEW("/resource/image/m_new.png"),
+	/**打开文件的图标*/
+	M_OPEN("/resource/image/m_open.png"),
+	/**关闭文件的图标*/
+	M_CLOSE("/resource/image/m_close.png");
 	;
 	
 	private URL url;

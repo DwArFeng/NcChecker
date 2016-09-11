@@ -14,6 +14,7 @@ import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
 import com.dwarfeng.dfunc.DwarfFunction;
 import com.dwarfeng.dfunc.io.CT;
+import com.dwarfeng.dfunc.io.CT.OutputType;
 import com.dwarfeng.dfunc.prog.mvc.AbstractControlManager;
 import com.dwarfeng.ncc.control.back.OpenFileRunnable;
 import com.dwarfeng.ncc.module.NccModuleControlPort;
@@ -24,7 +25,6 @@ import com.dwarfeng.ncc.program.conf.FrontConfig;
 import com.dwarfeng.ncc.program.conf.MfAppearConfig;
 import com.dwarfeng.ncc.program.key.StringFieldKey;
 import com.dwarfeng.ncc.view.NccViewControlPort;
-import com.dwarfeng.ncc.view.gui.NotifyCp;
 import com.dwarfeng.ncc.view.gui.StatusLabelType;
 
 /**
@@ -39,6 +39,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 	
 	private static final String KEY_NOTINIT = "控制管理器还未初始化。";
 	private static final String KEY_INITED = "控制管理器已经初始化了。";
+	
 	private static final StringFieldKey KEY_GETREADY = StringFieldKey.LABEL_GETREADY;
 	private static final StringFieldKey KEY_STARTFIN = StringFieldKey.OUT_STARTFIN;
 	
@@ -81,7 +82,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 			
 			//各个管理器初始化参数
 			moduleControlPort.frontCp().applyFontConfig(fc);
-			moduleControlPort.frontCp().setFrontCodeSerial(null,null);
+			moduleControlPort.frontCp().setFrontCodeSerial(null,null,false);
 			viewControlPort.frameCp().applyAppearanceConfig(mfac);
 			viewControlPort.frameCp().noneFileMode(true);
 			
@@ -89,10 +90,12 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 			viewControlPort.frameCp().setVisible(true);
 			
 			//输出就绪文本
+			CT.setOutputType(OutputType.NO_DATE);
 			viewControlPort.frameCp().setStatusLabelMessage(programAttrSet.getStringField(KEY_GETREADY), StatusLabelType.NORMAL);
 			viewControlPort.frameCp().traceInConsole(DwarfFunction.getWelcomeString());
 			viewControlPort.frameCp().traceInConsole("");
-			viewControlPort.frameCp().traceInConsole(CT.toString(programAttrSet.getStringField(KEY_STARTFIN)));
+			CT.setOutputType(OutputType.HALF_DATE);
+			viewControlPort.frameCp().traceInConsole(programAttrSet.getStringField(KEY_STARTFIN));
 		}
 
 		
@@ -183,7 +186,9 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 				//从视图中撤下代码段
 				viewControlPort.frameCp().showCode(null);
 				//移除前台模型中的代码段
-				moduleControlPort.frontCp().setFrontCodeSerial(null, null);
+				moduleControlPort.frontCp().setFrontCodeSerial(null, null, false);
+				//设置视图为无文件模式
+				viewControlPort.frameCp().noneFileMode(true);
 				
 			}finally{
 				viewControlPort.frameCp().unlockEdit();
@@ -198,8 +203,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 		 */
 		private void perhapsCloseFrontFile(){
 			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
-			if(		moduleControlPort.frontCp().hasFrontCode() &&
-					moduleControlPort.frontCp().needSave()) closeFrontFile();
+			if(	moduleControlPort.frontCp().hasFrontCode()) closeFrontFile();
 		}
 
 
@@ -222,6 +226,20 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 		private void perhapseSaveFrontFile(){
 			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
 			if(moduleControlPort.frontCp().hasFrontCode()) saveFrontFile();
+		}
+
+
+		/*
+		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.control.NccControlPort#newFrontFile()
+		 */
+		@Override
+		public void newFrontFile() {
+			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
+			
+			//可能需要涉及关闭文件
+			perhapsCloseFrontFile();
+			
 		}
 		
 		

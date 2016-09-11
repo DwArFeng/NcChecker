@@ -10,7 +10,7 @@ import com.dwarfeng.dfunc.dt.CodeTimer;
 import com.dwarfeng.dfunc.num.UnitTrans.Time;
 import com.dwarfeng.ncc.control.NccControlManager;
 import com.dwarfeng.ncc.module.front.CodeLoader;
-import com.dwarfeng.ncc.module.nc.ArrayCodeList;
+import com.dwarfeng.ncc.module.nc.ArrayCodeSerial;
 import com.dwarfeng.ncc.module.nc.Code;
 import com.dwarfeng.ncc.module.nc.CodeSerial;
 import com.dwarfeng.ncc.program.key.StringFieldKey;
@@ -27,8 +27,9 @@ public final class OpenFileRunnable extends AbstractCmr implements Runnable {
 	//-----------------------------以下是需要使用的各种字段键值------------------------------------
 	
 	private static final StringFieldKey KEY_LOADING = StringFieldKey.PROGRESS_FILE_NOWLOADING;
-	private static final StringFieldKey KEY_LOADSTART = StringFieldKey.OUT_LOADFILE_START;
-	private static final StringFieldKey KEY_LOADSTATS= StringFieldKey.OUT_LOADFILE_STATS;
+	private static final StringFieldKey KEY_START = StringFieldKey.OUT_LOADFILE_START;
+	private static final StringFieldKey KEY_STATS= StringFieldKey.OUT_LOADFILE_STATS;
+	private static final StringFieldKey KEY_SUSPEND= StringFieldKey.OUT_LOADFILE_SUSPEND;
 	
 	//------------------------------------------------------------------------------------------------
 	
@@ -59,7 +60,7 @@ public final class OpenFileRunnable extends AbstractCmr implements Runnable {
 			viewControlPort.frameCp().lockEdit();
 			//输出基本信息
 			viewControlPort.frameCp().traceInConsole(
-					programAttrSet.getStringField(KEY_LOADSTART),
+					programAttrSet.getStringField(KEY_START),
 					file.getAbsolutePath()
 			);
 			
@@ -79,8 +80,9 @@ public final class OpenFileRunnable extends AbstractCmr implements Runnable {
 			//循环读取程序
 			for(int i = 1 ; codeLoader.hasNext() ; i++){
 				
-				//如果手动停止，则终止程序。
+				//如果手动停止，则终止进程。
 				if(progressModel.isSuspend()){
+					viewControlPort.frameCp().traceInConsole(programAttrSet.getStringField(KEY_SUSPEND),"");
 					return;
 				}
 				
@@ -94,15 +96,15 @@ public final class OpenFileRunnable extends AbstractCmr implements Runnable {
 			
 			//循环结束，代码读取完毕。
 			//生成代码实例
-			CodeSerial codeList = new ArrayCodeList(codes.toArray(new Code[0]));
+			CodeSerial codeList = new ArrayCodeSerial(codes.toArray(new Code[0]));
 			//将代码设置为前端。
-			moduleControlPort.frontCp().setFrontCodeSerial(codeList, file);
+			moduleControlPort.frontCp().setFrontCodeSerial(codeList, file, false);
 			//在视图中渲染代码。
 			viewControlPort.frameCp().showCode(moduleControlPort.frontCp().getCodeSerial());
 			viewControlPort.frameCp().noneFileMode(false);
 			//生成报告
 			viewControlPort.frameCp().traceInConsole(
-					programAttrSet.getStringField(KEY_LOADSTATS),
+					programAttrSet.getStringField(KEY_STATS),
 					codeList.getTotle(),
 					cti.getTime(Time.MS)
 			);

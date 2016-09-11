@@ -21,6 +21,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -51,6 +52,7 @@ import com.dwarfeng.ncc.module.nc.Code;
 import com.dwarfeng.ncc.module.nc.CodeSerial;
 import com.dwarfeng.ncc.program.NccProgramAttrSet;
 import com.dwarfeng.ncc.program.conf.MfAppearConfig;
+import com.dwarfeng.ncc.program.key.ImageKey;
 import com.dwarfeng.ncc.program.key.StringFieldKey;
 import com.dwarfeng.ncc.view.gui.CodeLabelRender;
 import com.dwarfeng.ncc.view.gui.CodeRender;
@@ -150,8 +152,15 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 	private static final StringFieldKey KEY_OPENFILE_DES = StringFieldKey.MENU_FILE_OPENFILE_DES;
 	private static final StringFieldKey KEY_NEW = StringFieldKey.MENU_FILE_NEW;
 	private static final StringFieldKey KEY_NEW_DES = StringFieldKey.MENU_FILE_NEW_DES;
+	private static final StringFieldKey KEY_CLOSE = StringFieldKey.MENU_FILE_CLOSE;
+	private static final StringFieldKey KEY_CLOSE_DES = StringFieldKey.MENU_FILE_CLOSE_DES;
+
 	
 	private static final StringFieldKey KEY_NOMISSION = StringFieldKey.PROGRESS_NOMISSION;
+	
+	private static final ImageKey KEY_MNEW = ImageKey.M_NEW;
+	private static final ImageKey KEY_MOPEN = ImageKey.M_OPEN;
+	private static final ImageKey KEY_MCLOSE = ImageKey.M_CLOSE;
 	
 	//------------------------------------------------------------------------------------------------
 	
@@ -207,15 +216,6 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				statusLabel.setForeground(type.getTextColor());
 				statusLabel.setFont(type.getTexFont());
 				statusLabel.setText(message);
-			}
-
-			/*
-			 * (non-Javadoc)
-			 * @see com.dwarfeng.ncc.view.gui.NccFrameControlPort#traceConsole(java.lang.String)
-			 */
-			@Override
-			public void traceInConsole(String message) {
-				console.getOut().println(message);
 			}
 
 			/*
@@ -388,6 +388,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			private final JMenu file;
 			private final JMenuItem file_new;
 			private final JMenuItem file_open;
+			private final JMenuItem file_close;
 			
 			private final JMenu edit;
 			
@@ -409,6 +410,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				file_new = file.add(new JMenuItemAction.Builder()
 						.name(programAttrSet.getStringField(KEY_NEW))
 						.description(programAttrSet.getStringField(KEY_NEW_DES))
+						.icon(new ImageIcon(programAttrSet.getImage(KEY_MNEW)))
 						.keyStorke(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK))
 						.mnemonic(KeyEvent.VK_N)
 						.listener(new ActionListener() {
@@ -424,12 +426,29 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				file_open = file.add(new JMenuItemAction.Builder()
 						.name(programAttrSet.getStringField(KEY_OPENFILE) + DIALOG_SUFF)
 						.description(programAttrSet.getStringField(KEY_OPENFILE_DES))
+						.icon(new ImageIcon(programAttrSet.getImage(KEY_MOPEN)))
 						.keyStorke(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK))
 						.mnemonic(KeyEvent.VK_O)
 						.listener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
 								controlPort.openNcFile();
+							}
+						})
+						.build()
+				);
+				
+				file.addSeparator();
+				
+				file_close = file.add(new JMenuItemAction.Builder()
+						.name(programAttrSet.getStringField(KEY_CLOSE))
+						.description(programAttrSet.getStringField(KEY_CLOSE_DES))
+						.keyStorke(KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.CTRL_MASK))
+						.mnemonic(KeyEvent.VK_W)
+						.listener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								controlPort.closeFrontFile();
 							}
 						})
 						.build()
@@ -467,6 +486,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			private void refresh() {
 				file_new.setEnabled(!lockEditMask);
 				file_open.setEnabled(!lockEditMask);
+				file_close.setEnabled(!(lockEditMask || noneFileMask));
 			}
 			
 		}
@@ -659,8 +679,6 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 	
 		private final class ProgressPanel extends JPanel{
 			
-			private static final long serialVersionUID = 3169947673607680849L;
-
 			private final class Monitor extends InnerThread{
 
 				private final Lock lock;
@@ -753,6 +771,13 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				
 				suspendButton = new JButton();
 				suspendButton.setPreferredSize(new Dimension(20,20));
+				suspendButton.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						if(Objects.nonNull(monitor.model))
+							monitor.model.suspend();
+					}
+				});
 				add(suspendButton, BorderLayout.WEST);
 				
 				progressBar = new JProgressBar();

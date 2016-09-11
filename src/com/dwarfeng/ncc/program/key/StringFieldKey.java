@@ -36,6 +36,10 @@ public enum StringFieldKey {
 	MENU_FILE_NEW,
 	/**新建文本的描述*/
 	MENU_FILE_NEW_DES,
+	/**关闭文件*/
+	MENU_FILE_CLOSE,
+	/**关闭文件的描述*/
+	MENU_FILE_CLOSE_DES,
 	
 	/**启动完毕*/
 	OUT_STARTFIN,
@@ -45,5 +49,11 @@ public enum StringFieldKey {
 	OUT_LOADFILE_STATS,
 	/**读取失败*/
 	OUT_LOADFILE_FAIL,
+	/**读取人为中止*/
+	OUT_LOADFILE_SUSPEND,
+	/**新建文件开始*/
+	OUT_NEWFILE_START,
+	/**新建文件统计*/
+	OUT_NEWFILE_STATS,
 	
 }

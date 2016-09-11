@@ -10,7 +10,7 @@ import java.util.Objects;
  * @author DwArFeng
  * @since 1.8
  */
-public final class ArrayCodeList implements CodeSerial {
+public final class ArrayCodeSerial implements CodeSerial {
 
 	private final Code[] codeArray;
 	
@@ -20,7 +20,7 @@ public final class ArrayCodeList implements CodeSerial {
 	 * @throws NullPointerException 入口参数为 <code>null</code>。
 	 * @throws 代码不呈颗粒性递增。
 	 */
-	public ArrayCodeList(Code[] codeArray) {
+	public ArrayCodeSerial(Code[] codeArray) {
 		Objects.requireNonNull(codeArray);
 		this.codeArray = codeArray;
 		if(codeArray.length > 2){

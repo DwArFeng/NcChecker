@@ -63,12 +63,6 @@ public interface FrameCp {
 	public void showCode(CodeSerial codeSerial);
 	
 	/**
-	 * 设置控制台的输出文本。
-	 * @param message 控制台的输出文本。
-	 */
-	public void traceInConsole(String message);
-	
-	/**
 	 * 在控制台上格式化输出指定的文本。
 	 * @param format 指定的格式。
 	 * @param args 参数集。

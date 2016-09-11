@@ -22,8 +22,9 @@ public interface FrontCp{
 	 * 设置前台的代码列表。
 	 * @param codeSerial 指定的代码列表，如果要移除前台代码，则指定 <code>null</code>。
 	 * @param file 相连接的文件。
+	 * @param isCreate 是否是从程序中新建的。
 	 */
-	public void setFrontCodeSerial(CodeSerial codeSerial, File file);
+	public void setFrontCodeSerial(CodeSerial codeSerial, File file, boolean isCreate);
 	
 	/**
 	 * 使用指定的代码序列覆盖前台代码。

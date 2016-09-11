@@ -90,10 +90,11 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 			 * @see com.dwarfeng.ncc.module.front.FrontModuleControlPort#setFrontCodeSerial(com.dwarfeng.ncc.module.nc.CodeSerial)
 			 */
 			@Override
-			public void setFrontCodeSerial(CodeSerial codeSerial, File file) {
+			public void setFrontCodeSerial(CodeSerial codeSerial, File file, boolean isCreate) {
 				frontCodeSerial = codeSerial;
 				linkedFile = file;
 				rollback.clear();
+				saveFlag = isCreate;
 			}
 			
 			/*
@@ -185,8 +186,7 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 			@Override
 			public boolean needSave() {
 				if(!hasFrontCode()) throw new IllegalStateException();
-				// TODO Auto-generated method stub
-				return true;
+				return saveFlag;
 			}
 			
 			private void fitRoolback(){
@@ -202,10 +202,12 @@ public final class NccModuleManager extends AbstractModuleManager<NccModuleContr
 		private CodeSerial frontCodeSerial;
 		private File linkedFile;
 		private int maxRollback;
+		private boolean saveFlag;
 		
 		
 		public FrontModule() {
 			rollback = new ArrayDeque<CodeSerial>();
+			saveFlag = false;
 		}
 		
 	}
