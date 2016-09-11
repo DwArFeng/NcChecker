@@ -40,6 +40,14 @@ public enum StringFieldKey {
 	MENU_FILE_CLOSE,
 	/**关闭文件的描述*/
 	MENU_FILE_CLOSE_DES,
+	/**保存文件*/
+	MENU_FILE_SAVE,
+	/**保存文件的描述*/
+	MENU_FILE_SAVE_DES,
+	/**另存为文件*/
+	MENU_FILE_SAVEA,
+	/**另存为文件的描述*/
+	MENU_FILE_SAVEA_DES,
 	
 	/**启动完毕*/
 	OUT_STARTFIN,
