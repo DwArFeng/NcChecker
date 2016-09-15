@@ -14,12 +14,18 @@ import javax.swing.filechooser.FileFilter;
 public interface NotifyCp{
 
 	/**
-	 * 向用户询问一个文件。
+	 * 向用户询问一个文件，用于打开。
 	 * @param fileFilters 所有需要的文件过滤器，没有的话可以指定为 <code>null</code>。
 	 * @param allFileAllowed 是否允许选择所有文件(*.*)。
 	 * @return 选择的文件，如果什么也没有选择的话，则返回 <code>null</code>。
 	 */
-	public File askFile(FileFilter[] fileFilters,boolean allFileAllowed);
+	public File askOpenFile(FileFilter[] fileFilters,boolean allFileAllowed);
+	
+	/**
+	 * 向用户询问一个文件，用于保存。
+	 * @return 选择的文件，如果什么也没有选择的话，则返回 <code>null</code>。
+	 */
+	public File askSaveFile();
 	
 	/**
 	 * 用户的选择。

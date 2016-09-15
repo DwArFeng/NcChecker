@@ -3,6 +3,7 @@ package com.dwarfeng.ncc.view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -14,7 +15,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Formatter;
 import java.util.Objects;
 import java.util.concurrent.locks.Condition;
@@ -56,7 +59,7 @@ import com.dwarfeng.dfunc.io.CT;
 import com.dwarfeng.dfunc.prog.mvc.AbstractViewManager;
 import com.dwarfeng.dfunc.threads.InnerThread;
 import com.dwarfeng.ncc.control.NccControlPort;
-import com.dwarfeng.ncc.control.NccControlPort.Mode;
+import com.dwarfeng.ncc.control.cps.CodeCp.CodeEditMode;
 import com.dwarfeng.ncc.model.nc.Code;
 import com.dwarfeng.ncc.model.nc.CodeSerial;
 import com.dwarfeng.ncc.program.NccProgramAttrSet;
@@ -129,7 +132,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 		 * @see com.dwarfeng.ncc.view.gui.NotifyControlPort#askFile(javax.swing.filechooser.FileFilter[], boolean)
 		 */
 		@Override
-		public File askFile(FileFilter[] fileFilters, boolean allFileAllowed) {
+		public File askOpenFile(FileFilter[] fileFilters, boolean allFileAllowed) {
 			JFileChooser fc = new JFileChooser();
 			fc.resetChoosableFileFilters();
 			for(FileFilter ff:fileFilters) fc.setFileFilter(ff);
@@ -149,6 +152,28 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 
 		/*
 		 * (non-Javadoc)
+		 * @see com.dwarfeng.ncc.view.gui.NotifyCp#askSaveFile()
+		 */
+		@Override
+		public File askSaveFile() {
+			JFileChooser fc = new JFileChooser();
+			fc.resetChoosableFileFilters();
+			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			fc.setAcceptAllFileFilterUsed(true);
+			fc.setMultiSelectionEnabled(false);
+			final int res = fc.showOpenDialog(mainFrame);
+			switch (res) {
+				case JFileChooser.CANCEL_OPTION:
+					return null;
+				case JFileChooser.ERROR_OPTION:
+					return null;
+				default:
+					return fc.getSelectedFile();
+			}
+		}
+		
+		/*
+		 * (non-Javadoc)
 		 * @see com.dwarfeng.ncc.view.gui.NotifyCp#showConfirm(java.lang.Object, java.lang.String, com.dwarfeng.ncc.view.gui.NotifyCp.OptionType, com.dwarfeng.ncc.view.gui.NotifyCp.MessageType, javax.swing.Icon)
 		 */
 		@Override
@@ -166,6 +191,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 					return AnswerType.CANCEL;
 				}
 		}
+
 	};
 	
 	
@@ -270,12 +296,17 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 */
 			@Override
 			public void showCode(CodeSerial codeSerial) {
-				codeCenter1.codeLabelModel.clear();
-				codeCenter1.codeModel.clear();
-				if(Objects.nonNull(codeSerial)){
-					codeCenter1.codeLabelModel.addAll(Arrays.asList(codeSerial.toArray()));
-					codeCenter1.codeModel.addAll(Arrays.asList(codeSerial.toArray()));
-				}
+				EventQueue.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						codeCenter1.codeLabelModel.clear();
+						codeCenter1.codeModel.clear();
+						if(Objects.nonNull(codeSerial)){
+							codeCenter1.codeLabelModel.addAll(Arrays.asList(codeSerial.toArray()));
+							codeCenter1.codeModel.addAll(Arrays.asList(codeSerial.toArray()));
+						}
+					}
+				});
 			}
 
 			/*
@@ -343,7 +374,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 * @see com.dwarfeng.ncc.view.gui.FrameCp#toggleMode(com.dwarfeng.ncc.control.NccControlPort.CodePanelMode)
 			 */
 			@Override
-			public void knockForMode(Mode mode) {
+			public void knockForMode(CodeEditMode mode) {
 				codeToolBar.setMode(mode);
 				switch(mode){
 					case EDIT:
@@ -377,7 +408,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 * @see com.dwarfeng.ncc.view.gui.FrameCp#getEditFlag()
 			 */
 			@Override
-			public boolean getEditFlag() {
+			public boolean needCommit() {
 				return codeCenter2.getEidtFlag();
 			}
 
@@ -534,7 +565,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 						.listener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								controlPort.newFrontFile();
+								controlPort.fileCp().newFrontFile();
 							}
 						})
 						.build()
@@ -549,7 +580,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 						.listener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								controlPort.openNcFile();
+								controlPort.fileCp().openNcFile();
 							}
 						})
 						.build()
@@ -566,7 +597,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 						.listener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								controlPort.closeFrontFile();
+								controlPort.fileCp().closeFrontFile();
 							}
 						})
 						.build()
@@ -583,7 +614,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 						.listener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								controlPort.saveFrontFile();
+								controlPort.fileCp().saveFrontFile();
 							}
 						})
 						.build()
@@ -947,7 +978,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				refresh();
 			}
 			
-			public void setMode(Mode mode){
+			public void setMode(CodeEditMode mode){
 				modiFlag = true;
 				try{
 					buttonGroup.clearSelection();
@@ -976,14 +1007,16 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			private void checkButtonGroup(){
 				if(buttonGroup.getSelection() == currentButtonModel) return;
 				currentButtonModel = buttonGroup.getSelection();
-				if(codeEdit.isSelected()) controlPort.toggleMode(Mode.EDIT);
-				if(codeFunction.isSelected()) controlPort.toggleMode(Mode.INSPECT);
+				if(codeEdit.isSelected()) controlPort.codeCp().attemptToggleMode(CodeEditMode.EDIT);
+				if(codeFunction.isSelected()) controlPort.codeCp().attemptToggleMode(CodeEditMode.INSPECT);
 			}
 			
 		}
 	
 		private final class ProgressPanel extends JPanel{
 			
+			private static final long serialVersionUID = 222490662241685578L;
+
 			private final class Monitor extends InnerThread{
 
 				private final Lock lock;
@@ -1002,7 +1035,6 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				 */
 				@Override
 				protected void threadRunMethod() {
-					// TODO Auto-generated method stub
 					lock.lock();
 					try{
 						while(Objects.isNull(model)){
@@ -1046,9 +1078,16 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 					}
 				}
 
-
+				/*
+				 * (non-Javadoc)
+				 * @see com.dwarfeng.dfunc.threads.InnerThread#threadStopMethod()
+				 */
 				@Override
 				protected void threadStopMethod() {}
+				/*
+				 * (non-Javadoc)
+				 * @see com.dwarfeng.dfunc.threads.InnerThread#threadStartMethod()
+				 */
 				@Override
 				protected void threadStartMethod() {}
 				

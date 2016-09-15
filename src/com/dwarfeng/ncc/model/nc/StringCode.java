@@ -61,7 +61,7 @@ public final class StringCode implements Code{
 		return new StringBuilder()
 				.append("StringCode [content = ")
 				.append(content())
-				.append(" label = ")
+				.append(", label = ")
 				.append(getLabel())
 				.append("]")
 				.toString();

@@ -49,6 +49,8 @@ public final class StreamCodeLoader implements CodeLoader {
 		StringBuilder sb = new StringBuilder();
 		sb	.append("ScannerNcLoader [scanner = " )
 			.append(scanner)
+			.append(", lineIndex = ")
+			.append(lineIndex)
 			.append("]");
 		return sb.toString();
 	}

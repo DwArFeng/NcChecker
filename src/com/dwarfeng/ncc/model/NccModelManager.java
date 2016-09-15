@@ -156,6 +156,7 @@ public final class NccModelManager extends AbstractModelManager<NccModelControlP
 				if(!hasFrontCode()) throw new IllegalStateException();
 				rollback.push(frontCodeSerial);
 				frontCodeSerial = codeSerial;
+				saveFlag = true;
 				fitRoolback();
 			}
 

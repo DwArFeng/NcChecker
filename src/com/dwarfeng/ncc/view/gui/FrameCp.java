@@ -1,6 +1,6 @@
 package com.dwarfeng.ncc.view.gui;
 
-import com.dwarfeng.ncc.control.NccControlPort.Mode;
+import com.dwarfeng.ncc.control.cps.CodeCp.CodeEditMode;
 import com.dwarfeng.ncc.model.nc.CodeSerial;
 import com.dwarfeng.ncc.program.conf.MfAppearConfig;
 
@@ -82,7 +82,7 @@ public interface FrameCp {
 	 * @param mode 指定的模式。
 	 * @throws NullPointerException 入口参数为 <code>null</code>。
 	 */
-	public void knockForMode(Mode mode);
+	public void knockForMode(CodeEditMode mode);
 	
 	/**
 	 * 设置编辑面板的文本。
@@ -106,7 +106,7 @@ public interface FrameCp {
 	 * 获取编辑模式是否需要提交的标记。
 	 * @return 是否需要提交。
 	 */
-	public boolean getEditFlag();
+	public boolean needCommit();
 	
 	/**
 	 * 通知视图模型编辑的代码已经提交。
