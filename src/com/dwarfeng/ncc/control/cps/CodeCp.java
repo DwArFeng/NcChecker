@@ -26,5 +26,22 @@ public interface CodeCp {
 	 */
 	public void attemptToggleMode(CodeEditMode mode);
 	
+	/**
+	 * 撤销代码编辑。
+	 * @throws IllegalStateException 非编辑模式下调用该方法。
+	 */
+	public void undo();
+	
+	/**
+	 * 重做代码编辑。
+	 * @throws IllegalStateException 非编辑模式下调用该方法。
+	 */
+	public void redo();
+	
+	/**
+	 * 提交代码文本。
+	 * @throws IllegalStateException 非编辑模式下调用该方法。
+	 */
+	public void commit();
 	
 }

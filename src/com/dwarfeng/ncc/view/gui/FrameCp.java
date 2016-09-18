@@ -1,6 +1,12 @@
 package com.dwarfeng.ncc.view.gui;
 
+import java.util.NoSuchElementException;
+import java.util.Set;
+
+import javax.swing.undo.UndoManager;
+
 import com.dwarfeng.ncc.control.cps.CodeCp.CodeEditMode;
+import com.dwarfeng.ncc.model.nc.Code;
 import com.dwarfeng.ncc.model.nc.CodeSerial;
 import com.dwarfeng.ncc.program.conf.MfAppearConfig;
 
@@ -60,8 +66,9 @@ public interface FrameCp {
 	/**
 	 * 显示指定的代码序列，如果需要撤下代码，则入口参数使用 <code>null</code>。
 	 * @param codeSerial 显示指定的代码序列。
+	 * @throws IllegalStateException 在非查看模式下调用此方法。
 	 */
-	public void showCode(CodeSerial codeSerial);
+	public void setCode(CodeSerial codeSerial);
 	
 	/**
 	 * 在控制台上格式化输出指定的文本。
@@ -78,38 +85,65 @@ public interface FrameCp {
 	public void startProgressMonitor(ProgressModel model);
 	
 	/**
-	 * 切换代码面板的模式。
+	 * 通知视图需要切换代码面板模式。
 	 * @param mode 指定的模式。
 	 * @throws NullPointerException 入口参数为 <code>null</code>。
 	 */
 	public void knockForMode(CodeEditMode mode);
 	
 	/**
+	 * 通知视图需要更新某些代码。
+	 * @param codeSet 指定的代码组成的集合。
+	 * @throws NullPointerException 入口参数为 <code>null</code>。
+	 * @throws NoSuchElementException 代码集合中至少有一个代码是视图模型中没有的。
+	 * @throws IllegalStateException 在非查看模式下调用此方法。
+	 */
+	public void knockForCodeRefresh(Set<Code> codeSet);
+	
+	/**
+	 * 通知视图需要更新撤销或重做。
+	 * @throws IllegalStateException 在编辑看模式下调用此方法。
+	 */
+	public void knockForUndoOrRedo();
+	
+	/**
 	 * 设置编辑面板的文本。
 	 * @param text 指定的文本。
+	 * @throws IllegalStateException 在非编辑模式下调用此方法。
 	 */
 	public void setEditText(String text);
 	
 	/**
+	 * 获取界面中的撤销管理器。
+	 * @return 界面中的撤销管理器。
+	 * @throws IllegalStateException 在非编辑模式下调用此方法。
+	 */
+	public UndoManager getUndoManager();
+	
+	/**
 	 * 返回编辑界面中文本的总行数。
 	 * @return 编辑界面中文本的总行数。
+	 * @throws IllegalStateException 在非编辑模式下调用此方法。
 	 */
 	public int getEditLine();
 	
 	/**
 	 * 获取编辑界面中的文本。
 	 * @return 编辑界面中的文本。
+	 * @throws IllegalStateException 在非编辑模式下调用此方法。
 	 */
 	public String getEditText();
 	
 	/**
 	 * 获取编辑模式是否需要提交的标记。
 	 * @return 是否需要提交。
+	 * @throws IllegalStateException 在非编辑模式下调用此方法。
 	 */
 	public boolean needCommit();
 	
 	/**
 	 * 通知视图模型编辑的代码已经提交。
+	 * @throws IllegalStateException 在非编辑模式下调用此方法。
 	 */
 	public void knockForCommit();
 	

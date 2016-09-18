@@ -1,7 +1,5 @@
 package com.dwarfeng.ncc.control;
 
-import java.io.File;
-
 import com.dwarfeng.dfunc.prog.mvc.ControlPort;
 import com.dwarfeng.ncc.control.cps.CodeCp;
 import com.dwarfeng.ncc.control.cps.FileCp;

@@ -13,4 +13,10 @@ public interface CodeLabel {
 	 */
 	public int getLineIndex();
 	
+	/**
+	 * 返回该代码是否被标记。
+	 * @return 是否被标记。
+	 */
+	public boolean isMarked();
+	
 }

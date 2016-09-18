@@ -54,23 +54,22 @@ public enum StringFieldKey {
 	MENU_FILE_SAVEA,
 	/**另存为文件的描述*/
 	MENU_FILE_SAVEA_DES,
-	
-	/**提交更改*/
-	CODE_COMMIT,
-	/**提交更改的描述*/
-	CODE_COMMIT_DES,
-	/**提交更改并退出*/
-	CODE_COMMITNQ,
-	/**提交更改并退出的描述*/
-	CODE_COMMITNQ_DES,
-	/**放弃更改*/
-	CODE_DISCARD,
-	/**放弃更改的描述*/
-	CODE_DISCARD_DES,
-	/**放弃更改并退出*/
-	CODE_DISCARDNQ,
-	/**放弃更改并退出的描述*/
-	CODE_DISCARDNQ_DES,
+	/**退出程序*/
+	MENU_FILE_EXIT,
+	/**退出程序的描述*/
+	MENU_FILE_EXIT_DES,
+	/**撤销*/
+	MENU_EDIT_UNDO,
+	/**撤销的描述*/
+	MENU_EDIT_UNDO_DES,
+	/**恢复*/
+	MENU_EDIT_REDO,
+	/**恢复的描述*/
+	MENU_EDIT_REDO_DES,
+	/**提交*/
+	MENU_EDIT_COMMIT,
+	/**提交的描述*/
+	MENU_EDIT_COMMIT_DES,
 	
 	/**启动完毕*/
 	OUT_STARTFIN,
@@ -110,6 +109,10 @@ public enum StringFieldKey {
 	OUT_SAVE_FAIL,
 	/**保存代码中止*/
 	OUT_SAVE_SUSPEND,
+	/**关闭文件开始*/
+	OUT_CLOSE_START,
+	/**关闭文件统计*/
+	OUT_CLOSE_STATS,
 	
 	/**询问提交的标题*/
 	MSG_COMMIT_TITLE,

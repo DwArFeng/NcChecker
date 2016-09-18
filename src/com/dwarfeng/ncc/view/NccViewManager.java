@@ -15,11 +15,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Formatter;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -161,7 +160,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			fc.setAcceptAllFileFilterUsed(true);
 			fc.setMultiSelectionEnabled(false);
-			final int res = fc.showOpenDialog(mainFrame);
+			final int res = fc.showSaveDialog(mainFrame);
 			switch (res) {
 				case JFileChooser.CANCEL_OPTION:
 					return null;
@@ -213,15 +212,12 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 	private static final StringFieldKey KEY_SAVE_DES = StringFieldKey.MENU_FILE_SAVE_DES;
 	private static final StringFieldKey KEY_SAVEA = StringFieldKey.MENU_FILE_SAVEA;
 	private static final StringFieldKey KEY_SAVEA_DES = StringFieldKey.MENU_FILE_SAVEA_DES;
-	
-	private static final StringFieldKey KEY_COMMIT = StringFieldKey.CODE_COMMIT;
-	private static final StringFieldKey KEY_COMMIT_DES = StringFieldKey.CODE_COMMIT_DES;
-	private static final StringFieldKey KEY_COMMITNQ = StringFieldKey.CODE_COMMITNQ;
-	private static final StringFieldKey CODE_COMMIT_DES = StringFieldKey.CODE_COMMITNQ_DES;
-	private static final StringFieldKey KEY_DISCARD = StringFieldKey.CODE_DISCARD;
-	private static final StringFieldKey KEY_DISCARD_DES = StringFieldKey.CODE_DISCARD_DES;
-	private static final StringFieldKey KEY_DISCARDNQ = StringFieldKey.CODE_DISCARDNQ;
-	private static final StringFieldKey KEY_DISCARDNQ_DES = StringFieldKey.CODE_DISCARDNQ_DES;
+	private static final StringFieldKey KEY_EXIT = StringFieldKey.MENU_FILE_EXIT;
+	private static final StringFieldKey KEY_EXIT_DES = StringFieldKey.MENU_FILE_EXIT_DES;
+	private static final StringFieldKey KEY_UNDO = StringFieldKey.MENU_EDIT_UNDO;
+	private static final StringFieldKey KEY_UNDO_DES = StringFieldKey.MENU_EDIT_UNDO_DES;
+	private static final StringFieldKey KEY_REDO = StringFieldKey.MENU_EDIT_REDO;
+	private static final StringFieldKey KEY_REDO_DES = StringFieldKey.MENU_EDIT_REDO_DES;
 	
 	private static final StringFieldKey KEY_NOMISSION = StringFieldKey.PROGRESS_NOMISSION;
 	
@@ -241,6 +237,8 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 	private class NccFrame extends JFrame{
 		
 		private final FrameCp frameControlPort = new FrameCp() {
+			
+			private CodeEditMode mode = CodeEditMode.INSPECT;
 			
 			/*
 			 * (non-Javadoc)
@@ -295,7 +293,8 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 * @see com.dwarfeng.ncc.view.gui.NccFrameControlPort#showCode(com.dwarfeng.ncc.model.nc.CodeSerial)
 			 */
 			@Override
-			public void showCode(CodeSerial codeSerial) {
+			public void setCode(CodeSerial codeSerial) {
+				if(mode != CodeEditMode.INSPECT) throw new IllegalStateException();
 				EventQueue.invokeLater(new Runnable() {
 					@Override
 					public void run() {
@@ -375,7 +374,12 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 */
 			@Override
 			public void knockForMode(CodeEditMode mode) {
-				codeToolBar.setMode(mode);
+				
+				this.mode = mode;
+				codeToolBar.knockForMode(mode);
+				menu.knockForMode(mode);
+				this.mode = mode;
+				
 				switch(mode){
 					case EDIT:
 						if(Objects.nonNull(codeCenter1.getParent()) && codeCenter1.getParent().equals(codePanel)){
@@ -400,6 +404,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 */
 			@Override
 			public void setEditText(String text) {
+				if(mode != CodeEditMode.EDIT) throw new IllegalStateException();
 				codeCenter2.setText(text == null ? "" : text);
 			}
 
@@ -409,6 +414,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 */
 			@Override
 			public boolean needCommit() {
+				if(mode != CodeEditMode.EDIT) throw new IllegalStateException();
 				return codeCenter2.getEidtFlag();
 			}
 
@@ -418,6 +424,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 */
 			@Override
 			public void knockForCommit() {
+				if(mode != CodeEditMode.EDIT) throw new IllegalStateException();
 				codeCenter2.clearEditFlag();
 			}
 
@@ -427,6 +434,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 */
 			@Override
 			public int getEditLine() {
+				if(mode != CodeEditMode.EDIT) throw new IllegalStateException();
 				return codeCenter2.getLineCount();
 			}
 
@@ -436,7 +444,39 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			 */
 			@Override
 			public String getEditText() {
+				if(mode != CodeEditMode.EDIT) throw new IllegalStateException();
 				return codeCenter2.getText();
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.gui.FrameCp#knockForCodeRefresh(java.util.Set)
+			 */
+			@Override
+			public void knockForCodeRefresh(Set<Code> codeSet) {
+				if(mode != CodeEditMode.INSPECT) throw new IllegalStateException();
+				// TODO Auto-generated method stub
+				
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.gui.FrameCp#knockForUndoOrRedo()
+			 */
+			@Override
+			public void knockForUndoOrRedo() {
+				if(mode != CodeEditMode.EDIT) throw new IllegalStateException();
+				menu.refreshUndo();
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.view.gui.FrameCp#getUndoManager()
+			 */
+			@Override
+			public UndoManager getUndoManager() {
+				if(mode != CodeEditMode.EDIT) throw new IllegalStateException();
+				return codeCenter2.getUndoManager();
 			}
 		};
 		
@@ -538,15 +578,24 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			private final JMenuItem file_close;
 			private final JMenuItem file_save;
 			private final JMenuItem file_savea;
+			private final JMenuItem file_exit;
 			
 			private final JMenu edit;
+			private final JMenuItem edit_undo;
+			private final JMenuItem edit_redo;
 			
 			private boolean lockEditMask;
 			private boolean noneFileMask;
+			private boolean inspectFlag;
+			private boolean editFlag;
 			
 			
 			public NccMenu() {
 				super();
+				
+				inspectFlag = true;
+				editFlag = false;
+				
 				//定义菜单栏
 				file = new JMenu(programAttrSet.getStringField(KEY_FILE));
 				file.setMnemonic('F');
@@ -628,12 +677,75 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 						.listener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								// TODO Auto-generated method stub
-								
+								controlPort.fileCp().saveAsFrontFile();
 							}
 						})
 						.build()
 				);
+				
+				file.addSeparator();
+				
+				file_exit = file.add(new JMenuItemAction.Builder()
+						.name(programAttrSet.getStringField(KEY_EXIT))
+						.description(programAttrSet.getStringField(KEY_EXIT_DES))
+						.keyStorke(KeyStroke.getKeyStroke(KeyEvent.VK_F4, InputEvent.ALT_MASK))
+						.listener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								controlPort.exitProgram();
+							}
+						})
+						.build()
+				);
+				
+				//编辑菜单的具体内容
+				
+				edit_undo = edit.add(new JMenuItemAction.Builder()
+						.name(programAttrSet.getStringField(KEY_UNDO))
+						.description(programAttrSet.getStringField(KEY_UNDO_DES))
+						.keyStorke(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_MASK))
+						.mnemonic(KeyEvent.VK_Z)
+						.listener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								controlPort.codeCp().undo();
+							}
+						})
+						.build()
+				);
+				
+				edit_redo = edit.add(new JMenuItemAction.Builder()
+						.name(programAttrSet.getStringField(KEY_REDO))
+						.description(programAttrSet.getStringField(KEY_REDO_DES))
+						.keyStorke(KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_MASK))
+						.mnemonic(KeyEvent.VK_Y)
+						.listener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								controlPort.codeCp().redo();
+							}
+						})
+						.build()
+				);
+				
+				edit.addSeparator();
+				
+			}
+			
+			public void knockForMode(CodeEditMode mode) {
+				codeToolBar.knockForMode(mode);
+				switch(mode){
+					case EDIT:
+						inspectFlag = false;
+						editFlag = true;
+						refresh();
+						break;
+					case INSPECT:
+						inspectFlag = true;
+						editFlag = false;
+						refresh();
+						break;
+				}
 			}
 			
 			/* (non-Javadoc)
@@ -670,6 +782,18 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				file_close.setEnabled(!(lockEditMask || noneFileMask));
 				file_save.setEnabled(!(lockEditMask || noneFileMask));
 				file_savea.setEnabled(!(lockEditMask || noneFileMask));
+				edit_undo.setEnabled(!(lockEditMask || noneFileMask) && editFlag
+						&& codeCenter2.getUndoManager().canUndo());
+				edit_redo.setEnabled(!(lockEditMask || noneFileMask) && editFlag
+						&& codeCenter2.getUndoManager().canRedo());
+				
+			}
+			
+			public void refreshUndo(){
+				edit_undo.setEnabled(!(lockEditMask || noneFileMask) && editFlag
+						&& codeCenter2.getUndoManager().canUndo());
+				edit_redo.setEnabled(!(lockEditMask || noneFileMask) && editFlag
+						&& codeCenter2.getUndoManager().canRedo());
 			}
 			
 		}
@@ -750,10 +874,6 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 		private class CodeCenter2 extends JPanel implements MutiStatus{
 			
 			private final JTextArea textArea;
-			private final JButton commit;
-			private final JButton commitNq;
-			private final JButton discard;
-			private final JButton discardNq;
 			
 			private final UndoManager undoManager;
 			
@@ -780,6 +900,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 						if(changeFlag) return;
 						undoManager.addEdit(e.getEdit());
 						editFlag = true;
+						menu.refreshUndo();
 					}
 				});
 				
@@ -792,51 +913,6 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				gbl_southPanel.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, 0.0};
 				gbl_southPanel.rowWeights = new double[]{0.0};
 				southPanel.setLayout(gbl_southPanel);
-				add(southPanel, BorderLayout.SOUTH);
-				
-				discardNq = new JButton();
-				discardNq.setText(programAttrSet.getStringField(KEY_DISCARDNQ));
-				discardNq.setToolTipText(programAttrSet.getStringField(KEY_DISCARDNQ_DES));
-				GridBagConstraints gbc_discardNq = new GridBagConstraints();
-				gbc_discardNq.anchor = GridBagConstraints.WEST;
-				gbc_discardNq.fill = GridBagConstraints.BOTH;
-				gbc_discardNq.insets = new Insets(0, 0, 0, 5);
-				gbc_discardNq.gridx = 0;
-				gbc_discardNq.gridy = 0;
-				southPanel.add(discardNq, gbc_discardNq);
-				
-				discard = new JButton();
-				discard.setText(programAttrSet.getStringField(KEY_DISCARD));
-				discard.setToolTipText(programAttrSet.getStringField(KEY_DISCARD_DES));
-				GridBagConstraints gbc_discard = new GridBagConstraints();
-				gbc_discard.anchor = GridBagConstraints.WEST;
-				gbc_discard.fill = GridBagConstraints.BOTH;
-				gbc_discard.insets = new Insets(0, 0, 0, 5);
-				gbc_discard.gridx = 1;
-				gbc_discard.gridy = 0;
-				southPanel.add(discard, gbc_discard);
-				
-				commit = new JButton();
-				commit.setText(programAttrSet.getStringField(KEY_COMMIT));
-				commit.setToolTipText(programAttrSet.getStringField(KEY_COMMIT_DES));
-				GridBagConstraints gbc_commit = new GridBagConstraints();
-				gbc_commit.anchor = GridBagConstraints.WEST;
-				gbc_commit.fill = GridBagConstraints.BOTH;
-				gbc_commit.insets = new Insets(0, 5, 0, 0);
-				gbc_commit.gridx = 3;
-				gbc_commit.gridy = 0;
-				southPanel.add(commit, gbc_commit);
-				
-				commitNq = new JButton();
-				commitNq.setText(programAttrSet.getStringField(KEY_COMMITNQ));
-				commitNq.setToolTipText(programAttrSet.getStringField(KEY_COMMIT_DES));
-				GridBagConstraints gbc_commitNq = new GridBagConstraints();
-				gbc_commitNq.anchor = GridBagConstraints.WEST;
-				gbc_commitNq.fill = GridBagConstraints.BOTH;
-				gbc_commitNq.insets = new Insets(0, 5, 0, 0);
-				gbc_commitNq.gridx = 4;
-				gbc_commitNq.gridy = 0;
-				southPanel.add(commitNq, gbc_commitNq);
 				
 			}
 
@@ -846,6 +922,10 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 
 			public int getLineCount() {
 				return textArea.getLineCount();
+			}
+			
+			public UndoManager getUndoManager(){
+				return this.undoManager;
 			}
 
 			/* (non-Javadoc)
@@ -978,7 +1058,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				refresh();
 			}
 			
-			public void setMode(CodeEditMode mode){
+			public void knockForMode(CodeEditMode mode){
 				modiFlag = true;
 				try{
 					buttonGroup.clearSelection();

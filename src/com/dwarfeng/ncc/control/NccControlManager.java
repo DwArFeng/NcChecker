@@ -189,23 +189,353 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 		public void exitProgram() {
 			if(!startFlag) throw new IllegalStateException(KEY_NOTINIT);
 			
-			//隐藏界面
-			viewControlPort.frameCp().setVisible(false);
+			programControlPort.backInvoke(exitProgramRunnable);
+		}
+		
+		private final Runnable exitProgramRunnable = new Runnable() {
 			
-			//保存各种配置
-			MfAppearConfig config = viewControlPort.frameCp().getAppearanceConfig();
-			try {
-				programControlPort.configCp().saveMainFrameAppearConfig(config);
-			} catch (IOException e) {
-				e.printStackTrace();
+			/*
+			 * (non-Javadoc)
+			 * @see java.lang.Runnable#run()
+			 */
+			@Override
+			public void run() {
+				try{
+					viewControlPort.frameCp().lockEdit();
+					//执行内部方法。
+					if(inner()) return;
+				}catch(Exception e){
+					e.printStackTrace();
+					return;
+				}finally{
+					viewControlPort.frameCp().unlockEdit();
+				}
+				
+				
+				try{
+					
+					//隐藏界面
+					viewControlPort.frameCp().setVisible(false);
+					
+					//保存各种配置
+					MfAppearConfig config = viewControlPort.frameCp().getAppearanceConfig();
+					try {
+						programControlPort.configCp().saveMainFrameAppearConfig(config);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					//调用各个控制器的终结方法。
+					
+					//退出程序
+					System.exit(0);
+					return;
+				}catch(Exception e){
+					e.printStackTrace();
+					return;
+				}
+				
+			}
+
+			private boolean inner() {
+				//判断是否拥有前台文件，有的话需要保存等操作
+				if(modelControlPort.frontCp().hasFrontCode()){
+					//判断程序是否在代码编辑模式下
+					if(codeControl.getCodeEidtMode() == CodeEditMode.EDIT){
+						//询问代码是否需要提交
+						SaveCheckResult commitResult = checkCommitCode();
+						//判断是否中止操作
+						if(commitResult.suspendFlag) return true;
+						//判断是否要提交文件。
+						if(commitResult.saveFlag){
+							//执行提交文件的方法，并且查看过程是否被人为中止
+							if(inner_commit()) return true;
+						}
+						
+						inner_toggleInspect();
+					}
+					
+					//询问文件是否要保存
+					SaveCheckResult saveResult = checkSaveFrontFile();
+					//首先判断是否终止操作
+					if(saveResult.suspendFlag) return true;
+					//判断是否要保存文件
+					if(saveResult.saveFlag){
+						//执行保存文件的方法，并且查看过程是否被人为中止。
+						if(inner_save()) return true;
+					}
+					//关闭文件调度
+					inner_close();
+				}
+				
+				return false;
+			}
+
+			private void inner_toggleInspect() {
+				//视图转换为编辑模式
+				codeControl.setCodeEditMode(CodeEditMode.INSPECT);
+				//渲染代码序列
+				viewControlPort.frameCp().setCode(modelControlPort.frontCp().getFrontCodeSerial());
+			}
+
+			private void inner_close() {
+				//进入查看状态
+				codeControl.setCodeEditMode(CodeEditMode.INSPECT);
+				//输出开始文本
+				viewControlPort.frameCp().traceInConsole(
+						programAttrSet.getStringField(KEY_CLOSE_START));
+				//开始计时
+				CodeTimer timer = new CodeTimer();
+				timer.start();
+				//清除前台
+				modelControlPort.frontCp().setFrontCodeSerial(null, null, false);
+				//撤下代码
+				viewControlPort.frameCp().setCode(null);
+				//进入无文件模式
+				viewControlPort.frameCp().noneFileMode(true);
+				//统计时间
+				timer.stop();
+				//输出统计文本
+				viewControlPort.frameCp().traceInConsole(
+						programAttrSet.getStringField(KEY_CLOSE_STATS), timer.getTime(Time.MS));
+			}
+
+			private boolean inner_save() {
+				
+				//保存文件开始，拉取前端模型中的相关文件。
+				File srcFile = modelControlPort.frontCp().getLinkedFile();
+				
+				//判断文件是否为null，如果是，则向用户询问文件。
+				if(Objects.isNull(srcFile)){
+					srcFile = viewControlPort.notifyCp().askSaveFile();
+				}
+				
+				//再次判断相关文件，如果仍然为null，代表用户取消了选择，则应该直接返回。
+				if(Objects.isNull(srcFile)) return true;
+				
+				//设置临时文件，数据首先被写到临时文件中，随后用临时文件替换源文件。
+				File tarFile = new File(srcFile.getAbsolutePath() + ".temp");
+				
+				//拉取必要的变量
+				FileOutputStream out = null;
+				CodePrinter codePrinter = null;
+				CodeTimer cti = new CodeTimer();
+				
+				try{
+					//创建临时文件
+					FileFunction.createFileIfNotExists(tarFile);
+					//拉取输出流
+					out = new FileOutputStream(tarFile);
+					
+					codePrinter = new StreamCodePrinter(
+							modelControlPort.frontCp().getCodeSerial(), 
+							out
+					);
+					
+					//输出开始信息
+					viewControlPort.frameCp().traceInConsole(
+							programAttrSet.getStringField(KEY_SAVE_START),
+							codePrinter.getTotleCode()
+					);
+					
+					//生成进度模型
+					ProgressModel progressModel = new DefaultProgressModel();
+					progressModel.setIndeterminate(false);
+					progressModel.setLabelText(programAttrSet.getStringField(KEY_SAVE_PROG));
+					progressModel.setMaximum(codePrinter.getTotleCode());
+					progressModel.setValue(0);
+					
+					//设置进度模型
+					viewControlPort.frameCp().startProgressMonitor(progressModel);
+					
+					//建立代码计时机制
+					cti.start();
+					
+					//循环读取程序
+					while(codePrinter.hasNext()){
+						
+						//如果手动停止，则终止进程。
+						if(progressModel.isSuspend()){
+							viewControlPort.frameCp().traceInConsole(
+									programAttrSet.getStringField(KEY_SAVE_SUSPEND));
+							return true;
+						}
+						
+						//否则循环读取代码。
+						codePrinter.printNext();
+						progressModel.setValue(codePrinter.currentValue());
+						
+					}
+					
+					//结束循环并停止监视与计时
+					progressModel.end();
+					cti.stop();
+					
+				}catch(IOException e){
+					//TODO 应该用更合理的方式通知用户。
+					e.printStackTrace();
+					viewControlPort.frameCp().traceInConsole(
+							programAttrSet.getStringField(KEY_SAVE_FAIL));
+					return true;
+				}finally{
+					if(Objects.nonNull(codePrinter)){
+						try {
+							codePrinter.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				
+				try {
+					//将目标文件复制到源文件上
+					FileFunction.FileCopy(tarFile, srcFile);
+					tarFile.delete();
+					//生成报告
+					viewControlPort.frameCp().traceInConsole(
+							programAttrSet.getStringField(KEY_SAVE_STATS),
+							cti.getTime(Time.MS)
+					);
+					return false;
+				} catch (IOException e) {
+					//TODO 应该用更合理的方式通知用户。
+					e.printStackTrace();
+					return true;
+				}
+				
+			}
+
+			private SaveCheckResult checkSaveFrontFile() {
+				if(!modelControlPort.frontCp().hasFrontCode()) throw new NullPointerException();
+				
+				if(!modelControlPort.frontCp().needSave()){
+					return SaveCheckResult.DEFAULT;
+				}else{
+					AnswerType type = viewControlPort.notifyCp().showConfirm(
+							programAttrSet.getStringField(KEY_SAVE_MESSAGE), 
+							programAttrSet.getStringField(KEY_SAVE_TITLE), 
+							OptionType.YES_NO_CANCEL, 
+							MessageType.QUESTION, null
+					);
+					
+					return toResult(type);
+				}
+			}
+
+			private boolean inner_commit() {
+				//拉取必要的变量
+				InputStream in = new StringInputStream(viewControlPort.frameCp().getEditText());
+				CodeLoader codeLoader = null;
+				
+				try{
+					//初始必要的变量
+					codeLoader = new StreamCodeLoader(in);
+					final List<Code> codes = new ArrayList<Code>();
+					
+					//输出开始信息
+					viewControlPort.frameCp().traceInConsole(
+							programAttrSet.getStringField(KEY_COMMIT_START),
+							viewControlPort.frameCp().getEditLine()
+					);
+					
+					//生成进度模型
+					ProgressModel progressModel = new DefaultProgressModel();
+					progressModel.setIndeterminate(false);
+					progressModel.setLabelText(programAttrSet.getStringField(KEY_COMMIT_PROG));
+					progressModel.setMaximum(viewControlPort.frameCp().getEditLine());
+					progressModel.setValue(0);
+					
+					//设置进度模型
+					viewControlPort.frameCp().startProgressMonitor(progressModel);
+					
+					//建立代码计时机制
+					CodeTimer cti = new CodeTimer();
+					cti.start();
+					
+					//循环读取程序
+					while(codeLoader.hasNext()){
+						
+						//如果手动停止，则终止进程。
+						if(progressModel.isSuspend()){
+							viewControlPort.frameCp().traceInConsole(
+									programAttrSet.getStringField(KEY_COMMIT_SUSPEND));
+							codeControl.setCodeEditMode(CodeEditMode.EDIT);
+							return true;
+						}
+						
+						//否则循环读取代码。
+						codes.add(codeLoader.loadNext());
+						progressModel.setValue(codeLoader.currentValue());
+						
+					}
+					
+					//结束循环并停止监视与计时
+					progressModel.end();
+					cti.stop();
+					
+					//生成代码序列
+					final CodeSerial codeSerial = new ArrayCodeSerial(codes.toArray(new Code[0]));
+					//提交代码
+					modelControlPort.frontCp().commitCodeSerial(codeSerial);
+					viewControlPort.frameCp().knockForCommit();
+					//生成报告
+					viewControlPort.frameCp().traceInConsole(
+							programAttrSet.getStringField(KEY_COMMIT_STATS),
+							cti.getTime(Time.MS)
+					);
+					
+					return false;
+					
+				}catch(Exception e){
+					//TODO 应该用更合理的方式通知用户
+					e.printStackTrace();
+					viewControlPort.frameCp().traceInConsole(programAttrSet.getStringField(KEY_COMMIT_FAIL));
+					viewControlPort.frameCp().knockForMode(CodeEditMode.EDIT);
+					return true;
+				}finally{
+					if(codeLoader != null){
+						try {
+							codeLoader.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+
+			private SaveCheckResult checkCommitCode() {
+				if(!modelControlPort.frontCp().hasFrontCode()) throw new NullPointerException();
+				if(codeControl.getCodeEidtMode() != CodeEditMode.EDIT) throw new IllegalStateException();
+				
+				if(!viewControlPort.frameCp().needCommit()){
+					return SaveCheckResult.DEFAULT;
+				}else{
+					AnswerType type = viewControlPort.notifyCp().showConfirm(
+							programAttrSet.getStringField(KEY_COMMIT_MESSAGE), 
+							programAttrSet.getStringField(KEY_COMMIT_TITLE), 
+							OptionType.YES_NO_CANCEL, 
+							MessageType.QUESTION, null
+					);
+					
+					return toResult(type);
+				}
+			}
+
+			private SaveCheckResult toResult(AnswerType type) {
+				Objects.requireNonNull(type);
+				
+				switch (type) {
+					case CANCEL:
+						return new SaveCheckResult(false, true);
+					case NO:
+						return new SaveCheckResult(false, false);
+					case YES:
+						return new SaveCheckResult(true, false);
+					default:
+						return new SaveCheckResult(false, false);
+				}
 			}
 			
-			//调用各个控制器的终结方法。
-			
-			//退出程序
-			System.exit(0);
-			
-		}
+		};
 
 		/*
 		 * (non-Javadoc)
@@ -269,6 +599,9 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 	private static final StringFieldKey KEY_OPEN_STATS= StringFieldKey.OUT_LOADFILE_STATS;
 	private static final StringFieldKey KEY_OPEN_SUSPEND= StringFieldKey.OUT_LOADFILE_SUSPEND;
 	private static final StringFieldKey KEY_OPEN_FAIL= StringFieldKey.OUT_LOADFILE_FAIL;
+	
+	private static final StringFieldKey KEY_CLOSE_START = StringFieldKey.OUT_CLOSE_START;
+	private static final StringFieldKey KEY_CLOSE_STATS= StringFieldKey.OUT_CLOSE_STATS;
 	
 	//------------------------------------------------------------------------------------------------
 	
@@ -343,12 +676,23 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 				private void inner_close() {
 					//进入查看状态
 					codeControl.setCodeEditMode(CodeEditMode.INSPECT);
+					//输出开始文本
+					viewControlPort.frameCp().traceInConsole(
+							programAttrSet.getStringField(KEY_CLOSE_START));
+					//开始计时
+					CodeTimer timer = new CodeTimer();
+					timer.start();
 					//清除前台
 					modelControlPort.frontCp().setFrontCodeSerial(null, null, false);
 					//撤下代码
-					viewControlPort.frameCp().showCode(null);
+					viewControlPort.frameCp().setCode(null);
 					//进入无文件模式
 					viewControlPort.frameCp().noneFileMode(true);
+					//统计时间
+					timer.stop();
+					//输出统计文本
+					viewControlPort.frameCp().traceInConsole(
+							programAttrSet.getStringField(KEY_CLOSE_STATS), timer.getTime(Time.MS));
 				}
 
 				private boolean inner_commit() {
@@ -724,7 +1068,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 					modelControlPort.frontCp().setFrontCodeSerial(codeSerial, null, true);
 					
 					//在视图中渲染代码
-					viewControlPort.frameCp().showCode(modelControlPort.frontCp().getCodeSerial());
+					viewControlPort.frameCp().setCode(modelControlPort.frontCp().getCodeSerial());
 					viewControlPort.frameCp().noneFileMode(false);
 					
 					//生成统计报告
@@ -854,7 +1198,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 					//打开文件
 					if(inner_open()) return;
 					//在视图中渲染代码。
-					viewControlPort.frameCp().showCode(modelControlPort.frontCp().getCodeSerial());
+					viewControlPort.frameCp().setCode(modelControlPort.frontCp().getCodeSerial());
 					viewControlPort.frameCp().noneFileMode(false);
 				}
 
@@ -979,7 +1323,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 					//视图转换为编辑模式
 					codeControl.setCodeEditMode(CodeEditMode.INSPECT);
 					//渲染代码序列
-					viewControlPort.frameCp().showCode(modelControlPort.frontCp().getFrontCodeSerial());
+					viewControlPort.frameCp().setCode(modelControlPort.frontCp().getFrontCodeSerial());
 				}
 
 				private boolean inner_commit() {
@@ -1337,7 +1681,252 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 					//视图转换为编辑模式
 					codeControl.setCodeEditMode(CodeEditMode.INSPECT);
 					//渲染代码序列
-					viewControlPort.frameCp().showCode(modelControlPort.frontCp().getFrontCodeSerial());
+					viewControlPort.frameCp().setCode(modelControlPort.frontCp().getFrontCodeSerial());
+				}
+
+				private boolean inner_commit() {
+					//拉取必要的变量
+					InputStream in = new StringInputStream(viewControlPort.frameCp().getEditText());
+					CodeLoader codeLoader = null;
+					
+					try{
+						//初始必要的变量
+						codeLoader = new StreamCodeLoader(in);
+						final List<Code> codes = new ArrayList<Code>();
+						
+						//输出开始信息
+						viewControlPort.frameCp().traceInConsole(
+								programAttrSet.getStringField(KEY_COMMIT_START),
+								viewControlPort.frameCp().getEditLine()
+						);
+						
+						//生成进度模型
+						ProgressModel progressModel = new DefaultProgressModel();
+						progressModel.setIndeterminate(false);
+						progressModel.setLabelText(programAttrSet.getStringField(KEY_COMMIT_PROG));
+						progressModel.setMaximum(viewControlPort.frameCp().getEditLine());
+						progressModel.setValue(0);
+						
+						//设置进度模型
+						viewControlPort.frameCp().startProgressMonitor(progressModel);
+						
+						//建立代码计时机制
+						CodeTimer cti = new CodeTimer();
+						cti.start();
+						
+						//循环读取程序
+						while(codeLoader.hasNext()){
+							
+							//如果手动停止，则终止进程。
+							if(progressModel.isSuspend()){
+								viewControlPort.frameCp().traceInConsole(
+										programAttrSet.getStringField(KEY_COMMIT_SUSPEND));
+								codeControl.setCodeEditMode(CodeEditMode.EDIT);
+								return true;
+							}
+							
+							//否则循环读取代码。
+							codes.add(codeLoader.loadNext());
+							progressModel.setValue(codeLoader.currentValue());
+							
+						}
+						
+						//结束循环并停止监视与计时
+						progressModel.end();
+						cti.stop();
+						
+						//生成代码序列
+						final CodeSerial codeSerial = new ArrayCodeSerial(codes.toArray(new Code[0]));
+						//提交代码
+						modelControlPort.frontCp().commitCodeSerial(codeSerial);
+						viewControlPort.frameCp().knockForCommit();
+						//生成报告
+						viewControlPort.frameCp().traceInConsole(
+								programAttrSet.getStringField(KEY_COMMIT_STATS),
+								cti.getTime(Time.MS)
+						);
+						
+						return false;
+						
+					}catch(Exception e){
+						//TODO 应该用更合理的方式通知用户
+						e.printStackTrace();
+						viewControlPort.frameCp().traceInConsole(programAttrSet.getStringField(KEY_COMMIT_FAIL));
+						viewControlPort.frameCp().knockForMode(CodeEditMode.EDIT);
+						return true;
+					}finally{
+						viewControlPort.frameCp().unlockEdit();
+						if(codeLoader != null){
+							try {
+								codeLoader.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				}
+			};
+
+			@Override
+			public void saveAsFrontFile() {
+				if(!modelControlPort.frontCp().hasFrontCode()) throw new NullPointerException();
+				
+				//后台中运行指定方法
+				programControlPort.backInvoke(saveAsFrontFileRunnable);
+			}
+			
+			private final Runnable saveAsFrontFileRunnable = new Runnable() {
+				
+				/*
+				 * (non-Javadoc)
+				 * @see java.lang.Runnable#run()
+				 */
+				@Override
+				public void run() {
+					try{
+						viewControlPort.frameCp().lockEdit();
+						//执行内部方法。
+						inner();
+						return;
+					}catch(Exception e){
+						e.printStackTrace();
+						return;
+					}finally{
+						viewControlPort.frameCp().unlockEdit();
+					}
+				}
+				
+				private void inner() {
+					//判断程序是否在代码编辑模式下
+					if(codeControl.getCodeEidtMode() == CodeEditMode.EDIT){
+						//询问代码是否需要提交
+						SaveCheckResult commitResult = checkCommitCode();
+						//判断是否中止操作
+						if(commitResult.suspendFlag) return;
+						//判断是否要提交文件。
+						if(commitResult.saveFlag){
+							//执行提交文件的方法，并且查看过程是否被人为中止
+							if(inner_commit()) return;
+						}
+						//切换到代码查看模式
+						inner_toggleInspect();
+					}
+					
+					//执行保存文件的方法，并且查看过程是否被人为中止。
+					if(inner_save()) return;
+					
+					//通知前台模型文件已经保存
+					modelControlPort.frontCp().knockForSave();
+				}
+
+				private boolean inner_save() {
+					
+					//询问用户文件
+					File srcFile = viewControlPort.notifyCp().askSaveFile();
+					
+					//如果文件为null，代表用户取消了选择，则应该直接返回。
+					if(Objects.isNull(srcFile)) return true;
+					
+					//链接文件与前台模型
+					modelControlPort.frontCp().linkFile(srcFile);
+					
+					//设置临时文件，数据首先被写到临时文件中，随后用临时文件替换源文件。
+					File tarFile = new File(srcFile.getAbsolutePath() + ".temp");
+					
+					//拉取必要的变量
+					FileOutputStream out = null;
+					CodePrinter codePrinter = null;
+					CodeTimer cti = new CodeTimer();
+					
+					try{
+						//创建临时文件
+						FileFunction.createFileIfNotExists(tarFile);
+						//拉取输出流
+						out = new FileOutputStream(tarFile);
+						
+						codePrinter = new StreamCodePrinter(
+								modelControlPort.frontCp().getCodeSerial(), 
+								out
+						);
+						
+						//输出开始信息
+						viewControlPort.frameCp().traceInConsole(
+								programAttrSet.getStringField(KEY_SAVE_START),
+								codePrinter.getTotleCode()
+						);
+						
+						//生成进度模型
+						ProgressModel progressModel = new DefaultProgressModel();
+						progressModel.setIndeterminate(false);
+						progressModel.setLabelText(programAttrSet.getStringField(KEY_SAVE_PROG));
+						progressModel.setMaximum(codePrinter.getTotleCode());
+						progressModel.setValue(0);
+						
+						//设置进度模型
+						viewControlPort.frameCp().startProgressMonitor(progressModel);
+						
+						//建立代码计时机制
+						cti.start();
+						
+						//循环读取程序
+						while(codePrinter.hasNext()){
+							
+							//如果手动停止，则终止进程。
+							if(progressModel.isSuspend()){
+								viewControlPort.frameCp().traceInConsole(
+										programAttrSet.getStringField(KEY_SAVE_SUSPEND));
+								return true;
+							}
+							
+							//否则循环读取代码。
+							codePrinter.printNext();
+							progressModel.setValue(codePrinter.currentValue());
+							
+						}
+						
+						//结束循环并停止监视与计时
+						progressModel.end();
+						cti.stop();
+						
+					}catch(IOException e){
+						//TODO 应该用更合理的方式通知用户。
+						e.printStackTrace();
+						viewControlPort.frameCp().traceInConsole(
+								programAttrSet.getStringField(KEY_SAVE_FAIL));
+						return true;
+					}finally{
+						if(Objects.nonNull(codePrinter)){
+							try {
+								codePrinter.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+					
+					try {
+						//将目标文件复制到源文件上
+						FileFunction.FileCopy(tarFile, srcFile);
+						tarFile.delete();
+						//生成报告
+						viewControlPort.frameCp().traceInConsole(
+								programAttrSet.getStringField(KEY_SAVE_STATS),
+								cti.getTime(Time.MS)
+						);
+						return false;
+					} catch (IOException e) {
+						//TODO 应该用更合理的方式通知用户。
+						e.printStackTrace();
+						return true;
+					}
+					
+				}
+
+				private void inner_toggleInspect() {
+					//视图转换为编辑模式
+					codeControl.setCodeEditMode(CodeEditMode.INSPECT);
+					//渲染代码序列
+					viewControlPort.frameCp().setCode(modelControlPort.frontCp().getFrontCodeSerial());
 				}
 
 				private boolean inner_commit() {
@@ -1560,7 +2149,7 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 					//视图转换为编辑模式
 					codeControl.setCodeEditMode(CodeEditMode.INSPECT);
 					//渲染代码序列
-					viewControlPort.frameCp().showCode(modelControlPort.frontCp().getFrontCodeSerial());
+					viewControlPort.frameCp().setCode(modelControlPort.frontCp().getFrontCodeSerial());
 				}
 
 				private boolean inner_commit() {
@@ -1760,6 +2349,34 @@ NccViewControlPort, NccControlPort, NccProgramAttrSet> {
 					}
 				}
 			};
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.control.cps.CodeCp#undo()
+			 */
+			@Override
+			public void undo() {
+				if(mode != CodeEditMode.EDIT) throw new IllegalStateException();
+				viewControlPort.frameCp().getUndoManager().undo();
+				viewControlPort.frameCp().knockForUndoOrRedo();
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see com.dwarfeng.ncc.control.cps.CodeCp#redo()
+			 */
+			@Override
+			public void redo() {
+				if(mode != CodeEditMode.EDIT) throw new IllegalStateException();
+				viewControlPort.frameCp().getUndoManager().redo();
+				viewControlPort.frameCp().knockForUndoOrRedo();
+			}
+
+			@Override
+			public void commit() {
+				// TODO Auto-generated method stub
+				
+			}
 			
 		};
 		

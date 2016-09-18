@@ -1,6 +1,7 @@
 package com.dwarfeng.ncc.view.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Insets;
 
@@ -123,6 +124,7 @@ public final class CodeLabelRender extends JPanel implements ListCellRenderer<Co
 			boolean isSelected, boolean cellHasFocus) {
 		if(value != null){
 			lineNumber.setText(value.getLabel().getLineIndex() + "");
+			if(value.getLabel().isMarked()) setBackground(Color.YELLOW);
 		}else{
 			lineNumber.setText("");
 		}

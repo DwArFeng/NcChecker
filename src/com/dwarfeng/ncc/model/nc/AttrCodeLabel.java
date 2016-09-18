@@ -16,7 +16,8 @@ public final class AttrCodeLabel implements CodeLabel {
 	 */
 	public static class Builder implements Buildable<AttrCodeLabel>{
 		
-		private int lineNumber;
+		private int lineNumber = 0;
+		private boolean markFlag = false;
 
 		/**
 		 * 生成默认的代码标签构造器。
@@ -33,20 +34,32 @@ public final class AttrCodeLabel implements CodeLabel {
 			return this;
 		}
 		
+		/**
+		 * 设置代码是否被标记。
+		 * @param val 值。
+		 * @return 构造器自身。
+		 */
+		public Builder markFlag(boolean val){
+			this.markFlag = val;
+			return this;
+		}
+		
 		/*
 		 * (non-Javadoc)
 		 * @see com.dwarfeng.dfunc.infs.Buildable#build()
 		 */
 		@Override
 		public AttrCodeLabel build() {
-			return new AttrCodeLabel(lineNumber);
+			return new AttrCodeLabel(lineNumber, markFlag);
 		}
 		
 	}
 	private final int lineIndex;
+	private final boolean markFlag;
 	
-	private AttrCodeLabel(int lineIndex) {
+	private AttrCodeLabel(int lineIndex, boolean markFlag) {
 		this.lineIndex = lineIndex;
+		this.markFlag = markFlag;
 	}
 
 	/*
@@ -60,6 +73,15 @@ public final class AttrCodeLabel implements CodeLabel {
 	
 	/*
 	 * (non-Javadoc)
+	 * @see com.dwarfeng.ncc.model.nc.CodeLabel#isMarked()
+	 */
+	@Override
+	public boolean isMarked() {
+		return markFlag;
+	}
+	
+	/*
+	 * (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -67,9 +89,10 @@ public final class AttrCodeLabel implements CodeLabel {
 		return new StringBuilder()
 				.append("AttrCodeLabel [line = ")
 				.append(getLineIndex())
+				.append(", markFlag = ")
+				.append(markFlag)
 				.append("]")
 				.toString();
 	}
-	
 
 }
