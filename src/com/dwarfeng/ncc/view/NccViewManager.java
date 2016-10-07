@@ -298,12 +298,7 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				EventQueue.invokeLater(new Runnable() {
 					@Override
 					public void run() {
-						codeCenter1.codeLabelModel.clear();
-						codeCenter1.codeModel.clear();
-						if(Objects.nonNull(codeSerial)){
-							codeCenter1.codeLabelModel.addAll(Arrays.asList(codeSerial.toArray()));
-							codeCenter1.codeModel.addAll(Arrays.asList(codeSerial.toArray()));
-						}
+						codeCenter1.setCode(codeSerial);
 					}
 				});
 			}
@@ -455,8 +450,8 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			@Override
 			public void knockForCodeRefresh(Set<Code> codeSet) {
 				if(mode != CodeEditMode.INSPECT) throw new IllegalStateException();
-				// TODO Auto-generated method stub
-				
+				Objects.requireNonNull(codeSet);
+				codeCenter1.refreshCode(codeSet);
 			}
 
 			/*
@@ -801,7 +796,6 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 		private class CodeCenter1 extends JPanel implements MutiStatus{
 
 			private final JList<Code> codeLabelList;
-			private final MuaListModel<Code> codeLabelModel;
 			private final ListCellRenderer<Code> codeLabelRender;
 			private final JList<Code> codeList;
 			private final MuaListModel<Code> codeModel;
@@ -815,9 +809,9 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				setLayout(new BorderLayout());
 				
 				codeLabelList = new JList<Code>();
-				codeLabelModel = new MuaListModel<Code>();
+				codeModel = new MuaListModel<Code>();
 				codeLabelRender = new CodeLabelRender();
-				codeLabelList.setModel(codeLabelModel);
+				codeLabelList.setModel(codeModel);
 				codeLabelList.getScrollableTracksViewportWidth();
 				codeLabelList.setCellRenderer(codeLabelRender);
 				
@@ -827,13 +821,19 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 				add(codeScrollPane, BorderLayout.CENTER);
 				
 				codeList = new JList<Code>();
-				codeModel = new MuaListModel<Code>();
 				codeRender = new CodeRender();
 				codeList.setModel(codeModel);
 				codeList.setCellRenderer(codeRender);
 				codeScrollPane.setViewportView(codeList);
 				codeScrollPane.setRowHeaderView(codeLabelList);
 				
+			}
+
+			public void setCode(CodeSerial codeSerial) {
+				codeCenter1.codeModel.clear();
+				if(Objects.nonNull(codeSerial)){
+					codeCenter1.codeModel.addAll(Arrays.asList(codeSerial.toArray()));
+				}
 			}
 
 			/* (non-Javadoc)
@@ -862,6 +862,15 @@ public final class NccViewManager extends AbstractViewManager<NccViewControlPort
 			public void noneFile(boolean aFlag){
 				noneFileMask = aFlag;
 				refresh();
+			}
+			
+			public void refreshCode(Set<Code> codeSet){
+				for(Code code : codeSet){
+					int index;
+					if((index = codeModel.indexOf(code)) >= 0){
+						codeModel.set(index, code);
+					}
+				}
 			}
 			
 			private void refresh() {
